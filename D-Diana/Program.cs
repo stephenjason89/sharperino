@@ -86,7 +86,7 @@ namespace D_Diana
             _config.SubMenu("Extra").AddItem(new MenuItem("usePackets", "Usepackes")).SetValue(true);
             _config.SubMenu("Extra").AddItem(new MenuItem("AutoShield", "Auto W")).SetValue(true);
             _config.SubMenu("Extra").AddItem(new MenuItem("Shieldper", "Self Health %")).SetValue(new Slider(40, 1, 100));
-            _config.SubMenu("Extra").AddItem(new MenuItem("Escape", "Escape Key!").SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
+            _config.SubMenu("Extra").AddItem(new MenuItem("Escapeaa", "Escape Key!").SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
             _config.SubMenu("Extra").AddItem(new MenuItem("Inter_E", "Interrupter E")).SetValue(true);
             _config.SubMenu("Extra").AddItem(new MenuItem("Gap_W", "GapClosers W")).SetValue(true);
 
@@ -169,7 +169,7 @@ namespace D_Diana
             {
                 JungleClear();
             }
-            if (_config.Item("Escape").GetValue<KeyBind>().Active)
+            if (_config.Item("Escapeaa").GetValue<KeyBind>().Active)
             {
                 Tragic();
             }

@@ -401,11 +401,11 @@ namespace D_Diana
                 _dfg.Cast(target);
             }
             if (target != null && _igniteSlot != SpellSlot.Unknown && ignitecombo &&
-                  _player.SummonerSpellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
+                  _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
             {
                 if (target.Health <= ComboDamage(target))
                 {
-                    _player.SummonerSpellbook.CastSpell(_igniteSlot, target);
+                    _player.Spellbook.CastSpell(_igniteSlot, target);
                 }
             }
 
@@ -447,7 +447,7 @@ namespace D_Diana
                     _dfg.Cast(target);
                 }
                 if (_igniteSlot != SpellSlot.Unknown &&
-                    _player.SummonerSpellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
+                    _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
                 {
                     if (target.Health <= ComboDamage(target))
                     {
@@ -800,7 +800,7 @@ namespace D_Diana
             var rhDmg = _player.GetSpellDamage(target, SpellSlot.R);
             var rRange = (_player.Distance(target) >= _config.Item("TargetRange").GetValue<Slider>().Value);
             if (target != null && _config.Item("UseIgnite").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
-                _player.SummonerSpellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
+                _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
             {
                 if (igniteDmg > target.Health)
                 {

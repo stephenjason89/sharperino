@@ -309,7 +309,7 @@ namespace D_Elise
                 Harass();
 
             }
-            if (_config.Item("ActiveKs").GetValue<bool>())Spellbook
+            if (_config.Item("ActiveKs").GetValue<bool>())
             {
                 KillSteal();
             }

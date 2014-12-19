@@ -658,7 +658,7 @@ namespace Orianna
 
         private static SpellDataInst GetIgnite()
         {
-            var spells = ObjectManager.Player.SummonerSpellbook.Spells;
+            var spells = ObjectManager.Player.Spellbook.Spells;
             return spells.FirstOrDefault(spell => spell.Name == "SummonerDot");
         }
 
@@ -672,7 +672,7 @@ namespace Orianna
             if (ignite != null && ignite.Slot != SpellSlot.Unknown && ignite.State == SpellState.Ready &&
                 ObjectManager.Player.CanCast)
             {
-                ObjectManager.Player.SummonerSpellbook.CastSpell(ignite.Slot, enemy);
+                ObjectManager.Player.Spellbook.CastSpell(ignite.Slot, enemy);
                 return true;
             }
             return false;

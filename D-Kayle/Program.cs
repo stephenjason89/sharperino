@@ -45,7 +45,11 @@ namespace D_Kayle
         private static void Game_OnGameLoad(EventArgs args)
         {
             _player = ObjectManager.Player;
-            if (ObjectManager.Player.BaseSkinName != ChampionName) return;
+            if (ObjectManager.Player.BaseSkinName != ChampionName)
+            {
+                Game.PrintChat("Please use Kayle~");
+                return;
+            }
 
 
             _q = new Spell(SpellSlot.Q, 650f);
@@ -193,8 +197,8 @@ namespace D_Kayle
                 GenModelPacket(_player.ChampionName, _config.Item("skinKayle").GetValue<Slider>().Value);
                 _lastSkin = _config.Item("skinKayle").GetValue<Slider>().Value;
             }
-             Game.PrintChat(
-                "<font color='#FF0000'>If You like my work and want to support, and keep it always up to date plz donate via paypal in </font> <font color='#FF9900'>ssssssssssmith@hotmail.com</font> (10) S");
+            Game.PrintChat(
+               "<font color='#FF0000'>If You like my work and want to support me,  plz donate via paypal in </font> <font color='#FF9900'>ssssssssssmith@hotmail.com</font> (10) S");
         }
 
         private static void Game_OnGameUpdate(EventArgs args)

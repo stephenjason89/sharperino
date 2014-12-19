@@ -205,7 +205,7 @@ namespace D_Udyr
             Game.PrintChat("<font color='#881df2'>Udyr By Diabaths </font>Loaded!");
             Game.PrintChat("<font color='#881df2'>StunCycle by xcxooxl");
             Game.PrintChat(
-                "<font color='#FF0000'>If You like my work and want to support, and keep it always up to date plz donate via paypal in </font> <font color='#FF9900'>ssssssssssmith@hotmail.com</font> (10) S");
+               "<font color='#FF0000'>If You like my work and want to support me,  plz donate via paypal in </font> <font color='#FF9900'>ssssssssssmith@hotmail.com</font> (10) S");
         }
 
         private static void OnGameUpdate(EventArgs args)

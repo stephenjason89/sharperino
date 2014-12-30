@@ -68,7 +68,7 @@ namespace D_Shyvana
 
             //TargetSelector
             var targetSelectorMenu = new Menu("Target Selector", "Target Selector");
-            SimpleTs.AddToMenu(targetSelectorMenu);
+            TargetSelector.AddToMenu(targetSelectorMenu);
             _config.AddSubMenu(targetSelectorMenu);
 
             //Orbwalker
@@ -212,7 +212,7 @@ namespace D_Shyvana
             // _config.SubMenu("Misc").AddItem(new MenuItem("MinTargetsgap", "min enemy >=(GapClosers)").SetValue(new Slider(2, 1, 5)));
             _config.SubMenu("Misc").AddItem(new MenuItem("skinshy", "Use Custom Skin").SetValue(false));
             _config.SubMenu("Misc").AddItem(new MenuItem("skinshyvana", "Skin Changer").SetValue(new Slider(4, 1, 6)));
-            _config.SubMenu("Misc").AddItem(new MenuItem("usePackets", "Usepackes")).SetValue(true);
+           // _config.SubMenu("Misc").AddItem(new MenuItem("usePackets", "Usepackes")).SetValue(true);
 
             //Misc
             _config.AddSubMenu(new Menu("HitChance", "HitChance"));
@@ -353,7 +353,7 @@ namespace D_Shyvana
             var useR = _config.Item("UseRC").GetValue<bool>();
             var autoR = _config.Item("UseRE").GetValue<bool>();
 
-            var t = SimpleTs.GetTarget(_r.Range, SimpleTs.DamageType.Magical);
+            var t = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
             Smiteontarget(t);
             if (t != null && _config.Item("UseIgnite").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
                 _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
@@ -368,7 +368,7 @@ namespace D_Shyvana
                 if (t != null && _r.GetPrediction(t).Hitchance >= Rchange())
                     if (!t.HasBuff("JudicatorIntervention") && !t.HasBuff("Undying Rage") &&
                         ComboDamage(t) > t.Health)
-                        _r.CastIfHitchanceEquals(t, HitChance.Medium, Packets());
+                        _r.CastIfHitchanceEquals(t, HitChance.Medium);
             }
             if (useW && _w.IsReady())
             {
@@ -381,7 +381,7 @@ namespace D_Shyvana
 
                 if (t != null && _player.Distance(t) < _e.Range &&
                     _e.GetPrediction(t).Hitchance >= Echange())
-                    _e.Cast(t, Packets(), true);
+                    _e.Cast(t);
             }
 
             if (useQ && _q.IsReady())
@@ -395,7 +395,7 @@ namespace D_Shyvana
                 if (ObjectManager.Get<Obj_AI_Hero>().Count(hero => hero.IsValidTarget(_r.Range)) >=
                     _config.Item("MinTargets").GetValue<Slider>().Value
                     && _r.GetPrediction(t).Hitchance >= Rchange())
-                    _r.Cast(t, Packets(), true);
+                    _r.Cast(t);
             }
 
             UseItemes(t);
@@ -403,28 +403,28 @@ namespace D_Shyvana
 
         private static void Harass()
         {
-            var target = SimpleTs.GetTarget(_r.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
             var useQ = _config.Item("UseQH").GetValue<bool>();
             var useW = _config.Item("UseWH").GetValue<bool>();
             var useE = _config.Item("UseEH").GetValue<bool>();
             var useItemsH = _config.Item("UseItemsharass").GetValue<bool>();
             if (useQ && _q.IsReady())
             {
-                var t = SimpleTs.GetTarget(_w.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_w.Range, TargetSelector.DamageType.Magical);
                 if (t != null && t.Distance(_player.Position) < _w.Range)
                     _q.Cast();
             }
             if (useW && _w.IsReady())
             {
-                var t = SimpleTs.GetTarget(_w.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_w.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _w.Range)
                     _w.Cast();
             }
             if (useE && _e.IsReady())
             {
-                var t = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _e.Range && _e.GetPrediction(t).Hitchance >= Echange())
-                    _e.Cast(t, Packets(), true);
+                    _e.Cast(t);
             }
             if (useItemsH && _tiamat.IsReady() && _player.Distance(target) < _tiamat.Range)
             {
@@ -546,7 +546,7 @@ namespace D_Shyvana
                 }
                 if (_e.IsReady() && useE)
                 {
-                    _e.Cast(mob, Packets());
+                    _e.Cast(mob);
                 }
 
                 if (useItemsJ && _tiamat.IsReady() && _player.Distance(mob) < _tiamat.Range)
@@ -594,29 +594,29 @@ namespace D_Shyvana
             }
         }
 
-        private static bool Packets()
+       /* private static bool Packets()
         {
             return _config.Item("usePackets").GetValue<bool>();
-        }
+        }*/
 
         private static void KillSteal()
         {
 
             if (_e.IsReady() && _config.Item("UseEM").GetValue<bool>())
             {
-                var t = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
                 if (_e.GetDamage(t) > t.Health && _player.Distance(t) <= _e.Range)
                 {
-                    _e.CastIfHitchanceEquals(t, Echange(), Packets());
+                    _e.CastIfHitchanceEquals(t, Echange());
                 }
             }
             if (_r.IsReady() && _config.Item("UseRM").GetValue<bool>())
             {
-                var t = SimpleTs.GetTarget(_r.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
                 if (t != null)
                     if (!t.HasBuff("JudicatorIntervention") && !t.HasBuff("Undying Rage") &&
                         _r.GetDamage(t) > t.Health && _r.GetPrediction(t).Hitchance >= Rchange())
-                        _r.Cast(t, Packets(), true);
+                        _r.Cast(t);
             }
         }
 
@@ -684,7 +684,7 @@ namespace D_Shyvana
         {
             if (_r.IsReady() && gapcloser.Sender.IsValidTarget(_r.Range) && _config.Item("Gap_E").GetValue<bool>())
             {
-                _r.Cast(Game.CursorPos, Packets());
+                _r.Cast(Game.CursorPos);
             }
         }
 
@@ -694,17 +694,17 @@ namespace D_Shyvana
             if (_player.Distance(target) < _r.Range && target != null &&
                 _r.GetPrediction(target).Hitchance >= HitChance.Low)
             {
-                _r.Cast(target, Packets());
+                _r.Cast(target);
             }
         }
 
         private static void Forest()
         {
-            var target = SimpleTs.GetTarget(_r.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
             _player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
             if (_config.Item("UseRF").GetValue<bool>() && _r.IsReady() && target != null)
             {
-                _r.Cast(Game.CursorPos, Packets());
+                _r.Cast(Game.CursorPos);
             }
             if (_config.Item("UseWF").GetValue<bool>() && _w.IsReady() && target != null)
             {
@@ -712,7 +712,7 @@ namespace D_Shyvana
             }
             if (_config.Item("UseEF").GetValue<bool>() && _e.IsReady() && _player.Distance(target) < _e.Range)
             {
-                _e.Cast(target, Packets());
+                _e.Cast(target);
             }
         }
 

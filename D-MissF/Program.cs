@@ -54,7 +54,7 @@ namespace D_MissF
 
             //TargetSelector
             var targetSelectorMenu = new Menu("Target Selector", "Target Selector");
-            SimpleTs.AddToMenu(targetSelectorMenu);
+            TargetSelector.AddToMenu(targetSelectorMenu);
             _config.AddSubMenu(targetSelectorMenu);
 
             //Orbwalker
@@ -89,21 +89,25 @@ namespace D_MissF
                 .AddItem(
                     new MenuItem("ActiveHarass", "Harass!").SetValue(new KeyBind("C".ToCharArray()[0], KeyBindType.Press)));
 
+            //LaneClear
             _config.AddSubMenu(new Menu("Farm", "Farm"));
-            _config.SubMenu("Farm").AddItem(new MenuItem("UseQL", "Q LaneClear")).SetValue(true);
-            _config.SubMenu("Farm").AddItem(new MenuItem("UseEL", "E LaneClear")).SetValue(true);
-            _config.SubMenu("Farm").AddItem(new MenuItem("UseQLH", "Q LastHit")).SetValue(true);
-            _config.SubMenu("Farm").AddItem(new MenuItem("UseELH", "E LastHit")).SetValue(true);
-            _config.SubMenu("Farm").AddItem(new MenuItem("UseQJ", "Q Jungle")).SetValue(true);
-            _config.SubMenu("Farm").AddItem(new MenuItem("UseEJ", "E Jungle")).SetValue(true);
-            _config.SubMenu("Farm").AddItem(new MenuItem("Lanemana", "Minimum Mana").SetValue(new Slider(60, 1, 100)));
-            _config.SubMenu("Farm")
-                .AddItem(
-                    new MenuItem("ActiveLast", "LastHit!").SetValue(new KeyBind("X".ToCharArray()[0], KeyBindType.Press)));
-            _config.SubMenu("Farm")
-                .AddItem(
-                    new MenuItem("ActiveLane", "LaneClear!").SetValue(new KeyBind("V".ToCharArray()[0],
-                        KeyBindType.Press)));
+            _config.SubMenu("Farm").AddSubMenu(new Menu("LaneFarm", "LaneFarm"));
+            _config.SubMenu("Farm").SubMenu("LaneFarm").AddItem(new MenuItem("UseQL", "Q LaneClear")).SetValue(true);
+            _config.SubMenu("Farm").SubMenu("LaneFarm").AddItem(new MenuItem("UseEL", "E LaneClear")).SetValue(true);
+            _config.SubMenu("Farm").SubMenu("LaneFarm").AddItem(new MenuItem("lanemana", "Minimum Mana% >").SetValue(new Slider(35, 1, 100)));
+            _config.SubMenu("Farm").SubMenu("LaneFarm").AddItem(new MenuItem("Activelane", "LaneClear!").SetValue(new KeyBind("V".ToCharArray()[0], KeyBindType.Press)));
+
+            _config.SubMenu("Farm").AddSubMenu(new Menu("LastHit", "LastHit"));
+            _config.SubMenu("Farm").SubMenu("LastHit").AddItem(new MenuItem("UseQLH", "Q LastHit")).SetValue(true);
+            _config.SubMenu("Farm").SubMenu("LastHit").AddItem(new MenuItem("UseELH", "E LastHit")).SetValue(true);
+            _config.SubMenu("Farm").SubMenu("LastHit").AddItem(new MenuItem("lastmana", "Minimum Mana% >").SetValue(new Slider(35, 1, 100)));
+            _config.SubMenu("Farm").SubMenu("LastHit").AddItem(new MenuItem("ActiveLast", "LastHit!").SetValue(new KeyBind("X".ToCharArray()[0], KeyBindType.Press)));
+
+            _config.SubMenu("Farm").AddSubMenu(new Menu("Jungle", "Jungle"));
+            _config.SubMenu("Farm").SubMenu("Jungle").AddItem(new MenuItem("UseQJ", "Q Jungle")).SetValue(true);
+            _config.SubMenu("Farm").SubMenu("Jungle").AddItem(new MenuItem("UseEJ", "E Jungle")).SetValue(true);
+            _config.SubMenu("Farm").SubMenu("Jungle").AddItem(new MenuItem("junglemana", "Minimum Mana% >").SetValue(new Slider(35, 1, 100)));
+            _config.SubMenu("Farm").SubMenu("Jungle").AddItem(new MenuItem("ActiveJungle", "Jungle!").SetValue(new KeyBind("V".ToCharArray()[0], KeyBindType.Press)));
 
             _config.AddSubMenu(new Menu("items", "items"));
             _config.SubMenu("items").AddItem(new MenuItem("Youmuu", "Use Youmuu's")).SetValue(true);
@@ -174,12 +178,18 @@ namespace D_MissF
                 Harass();
 
             }
-            if (_config.Item("ActiveLane").GetValue<KeyBind>().Active && (100 * (_player.Mana / _player.MaxMana)) > _config.Item("Lanemana").GetValue<Slider>().Value)
+            if (_config.Item("Activelane").GetValue<KeyBind>().Active &&
+                (100 * (_player.Mana / _player.MaxMana)) > _config.Item("lanemana").GetValue<Slider>().Value)
             {
                 Laneclear();
+            }
+            if (_config.Item("ActiveJungle").GetValue<KeyBind>().Active &&
+                (100 * (_player.Mana / _player.MaxMana)) > _config.Item("junglemana").GetValue<Slider>().Value)
+            {
                 JungleClear();
             }
-            if (_config.Item("ActiveLast").GetValue<KeyBind>().Active && (100 * (_player.Mana / _player.MaxMana)) > _config.Item("Lanemana").GetValue<Slider>().Value)
+            if (_config.Item("ActiveLast").GetValue<KeyBind>().Active &&
+                (100 * (_player.Mana / _player.MaxMana)) > _config.Item("lastmana").GetValue<Slider>().Value)
             {
                 LastHit();
             }
@@ -260,7 +270,7 @@ namespace D_MissF
         // Dont Work perfect but work :p
         private static void CastQEnemy()
         {
-            var target = SimpleTs.GetTarget(_q.Range + 450, SimpleTs.DamageType.Physical);
+            var target = TargetSelector.GetTarget(_q.Range + 450, TargetSelector.DamageType.Physical);
             if (target.IsValidTarget(_q.Range))
             {
                 _q.CastOnUnit(target, Packets());
@@ -274,7 +284,7 @@ namespace D_MissF
 
         private static void Combo()
         {
-            var rtarget = SimpleTs.GetTarget(_r.Range - 200, SimpleTs.DamageType.Physical);
+            var rtarget = TargetSelector.GetTarget(_r.Range - 200, TargetSelector.DamageType.Physical);
             var useQ = _config.Item("UseQC").GetValue<bool>();
             var useW = _config.Item("UseWC").GetValue<bool>();
             var useE = _config.Item("UseEC").GetValue<bool>();
@@ -285,13 +295,13 @@ namespace D_MissF
 
             if (useW && _w.IsReady())
             {
-                var t = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
                 if (t != null)
                     _w.Cast();
             }
             if (useE && _e.IsReady())
             {
-                var t = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
                 if (t != null && t.Distance(_player.Position) < _e.Range)
                     _e.CastIfHitchanceEquals(t, t.IsMoving ? HitChance.High : HitChance.Medium, Packets());
             }
@@ -308,7 +318,7 @@ namespace D_MissF
             }
             UseItemes(rtarget);
         }
-        private static void Orbwalking_AfterAttack(Obj_AI_Base unit, Obj_AI_Base target)
+        private static void Orbwalking_AfterAttack(AttackableUnit unit, AttackableUnit target)
         {
             var useQ = _config.Item("UseQC").GetValue<bool>();
             var useW = _config.Item("UseWC").GetValue<bool>();
@@ -320,7 +330,7 @@ namespace D_MissF
 
                 if (useW && _w.IsReady())
                 {
-                    var t = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+                    var t = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
                     if (t != null)
                         _w.Cast();
                 }
@@ -328,7 +338,7 @@ namespace D_MissF
         }
         private static void Harass()
         {
-            var eTarget = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Physical);
+            var eTarget = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Physical);
             var useQ = _config.Item("UseQH").GetValue<bool>();
             var useE = _config.Item("UseEH").GetValue<bool>();
 
@@ -337,7 +347,7 @@ namespace D_MissF
 
             if (useE && _e.IsReady())
             {
-                var t = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
                 if (t != null && t.Distance(_player.Position) < _e.Range)
                     _e.CastIfHitchanceEquals(t, t.IsMoving ? HitChance.High : HitChance.Medium, Packets());
                 return;
@@ -461,7 +471,7 @@ namespace D_MissF
         {
             if (!_r.IsReady()) return;
 
-            Obj_AI_Hero target = SimpleTs.GetTarget(_r.Range - 200, SimpleTs.DamageType.Magical);
+            Obj_AI_Hero target = TargetSelector.GetTarget(_r.Range - 200, TargetSelector.DamageType.Magical);
             if (target == null) return;
             if (ComboDamage(target) < target.Health) return;
             if (target.HasBuff("JudicatorIntervention") && target.HasBuff("Undying Rage")) return;
@@ -478,7 +488,7 @@ namespace D_MissF
         {
             if (!_r.IsReady()) return;
 
-            Obj_AI_Hero target = SimpleTs.GetTarget(_r.Range - 200, SimpleTs.DamageType.Magical);
+            Obj_AI_Hero target = TargetSelector.GetTarget(_r.Range - 200, TargetSelector.DamageType.Magical);
             if (target == null) return;
             if (_r.GetDamage(target) * 8 < target.Health) return;
             if (target.HasBuff("JudicatorIntervention") && target.HasBuff("Undying Rage")) return;
@@ -492,7 +502,7 @@ namespace D_MissF
         }
         private static void KillSteal()
         {
-            var target = SimpleTs.GetTarget(_w.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_w.Range, TargetSelector.DamageType.Magical);
             var qDmg = _player.GetSpellDamage(target, SpellSlot.Q);
             var eDmg = _player.GetSpellDamage(target, SpellSlot.E);
             if (_q.IsReady() && _player.Distance(target) <= _q.Range && target != null && _config.Item("UseQM").GetValue<bool>())

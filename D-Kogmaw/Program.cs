@@ -26,7 +26,7 @@ namespace D_Kogmaw
 
         private static SpellSlot _igniteSlot;
 
-        private static Items.Item _youmuu, _dfg, _blade, _bilge;
+        private static Items.Item _youmuu, _dfg, _blade, _bilge, _hextech;
 
         private static readonly List<string> Skins = new List<string>();
 
@@ -65,7 +65,8 @@ namespace D_Kogmaw
                    Utility.Map.GetMap()._MapType == Utility.Map.MapType.CrystalScar
                 ? new Items.Item(3188, 750)
                 : new Items.Item(3128, 750);
-            
+
+            _hextech = new Items.Item(3146, 700);
             _youmuu = new Items.Item(3142, 10);
             _bilge = new Items.Item(3144, 475f);
             _blade = new Items.Item(3153, 475f);
@@ -78,7 +79,7 @@ namespace D_Kogmaw
 
             //TargetSelector
             var targetSelectorMenu = new Menu("Target Selector", "Target Selector");
-            SimpleTs.AddToMenu(targetSelectorMenu);
+            TargetSelector.AddToMenu(targetSelectorMenu);
             _config.AddSubMenu(targetSelectorMenu);
 
             //Orbwalker
@@ -106,6 +107,7 @@ namespace D_Kogmaw
             _config.SubMenu("Combo")
                 .AddItem(new MenuItem("ActiveCombo", "Combo!").SetValue(new KeyBind(32, KeyBindType.Press)));
 
+            //Items
             _config.AddSubMenu(new Menu("items", "items"));
             _config.SubMenu("items").AddItem(new MenuItem("Youmuu", "Use Youmuu's")).SetValue(true);
             _config.SubMenu("items").AddItem(new MenuItem("Bilge", "Use Bilge")).SetValue(true);
@@ -114,6 +116,10 @@ namespace D_Kogmaw
             _config.SubMenu("items").AddItem(new MenuItem("Blade", "Use Blade")).SetValue(true);
             _config.SubMenu("items").AddItem(new MenuItem("BladeEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
             _config.SubMenu("items").AddItem(new MenuItem("Blademyhp", "Or Your  Hp <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items").AddItem(new MenuItem("usedfg", "Use DFG")).SetValue(true);
+            _config.SubMenu("items").AddItem(new MenuItem("Hextech", "Hextech Gunblade")).SetValue(true);
+            _config.SubMenu("items").AddItem(new MenuItem("HextechEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items").AddItem(new MenuItem("Hextechmyhp", "Or Your  Hp <").SetValue(new Slider(85, 1, 100)));
             _config.SubMenu("items").AddItem(new MenuItem("usedfg", "Use DFG")).SetValue(true);
            
 
@@ -302,16 +308,24 @@ namespace D_Kogmaw
                 dmg += _player.GetSpellDamage(hero, SpellSlot.E);
             if (_r.IsReady())
                 dmg += _player.GetSpellDamage(hero, SpellSlot.R)*3;
+            if (Items.HasItem(3144) && Items.CanUseItem(3144))
+                dmg += _player.GetItemDamage(hero, Damage.DamageItems.Bilgewater);
             if (Items.HasItem(3153) && Items.CanUseItem(3153))
                 dmg += _player.GetItemDamage(hero, Damage.DamageItems.Botrk);
+            if (Items.HasItem(3146) && Items.CanUseItem(3146))
+                dmg += _player.GetItemDamage(hero, Damage.DamageItems.Hexgun);
             if (Items.HasItem(3128))
             {
                 dmg += _player.GetItemDamage(hero, Damage.DamageItems.Dfg);
-                dmg = dmg*1.2;
+                dmg = dmg * 1.2;
             }
             if (ObjectManager.Player.GetSpellSlot("SummonerIgnite") != SpellSlot.Unknown)
             {
                 dmg += _player.GetSummonerSpellDamage(hero, Damage.SummonerSpell.Ignite);
+            }
+            if (ObjectManager.Player.HasBuff("LichBane"))
+            {
+                dmg += _player.BaseAttackDamage * 0.75 + _player.FlatMagicDamageMod * 0.5;
             }
             dmg += _player.GetAutoAttackDamage(hero, true)*2;
             return (float) dmg;
@@ -331,7 +345,7 @@ namespace D_Kogmaw
         {
             if (_e.IsReady() && gapcloser.Sender.IsValidTarget(_e.Range) && _config.Item("Gap_E").GetValue<bool>())
             {
-                _e.Cast(gapcloser.Sender, Packets());
+                _e.Cast(gapcloser.Sender);
             }
         }
 
@@ -339,7 +353,7 @@ namespace D_Kogmaw
         {
             if (!Orbwalking.CanMove(100) &&
                 !(ObjectManager.Player.BaseAbilityDamage + ObjectManager.Player.FlatMagicDamageMod > 100)) return;
-            var etarget = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Physical);
+            var etarget = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Physical);
             var useQ = _config.Item("UseQC").GetValue<bool>();
             var useW = _config.Item("UseWC").GetValue<bool>();
             var useE = _config.Item("UseEC").GetValue<bool>();
@@ -364,29 +378,29 @@ namespace D_Kogmaw
                 foreach (
                     var hero in
                         ObjectManager.Get<Obj_AI_Hero>()
-                            .Where(hero => hero.IsValidTarget(Orbwalking.GetRealAutoAttackRange(hero) + _w.Range)))
+                            .Where(hero => hero.IsValidTarget(Orbwalking.GetRealAutoAttackRange(_player) + _w.Range)))
                     _w.CastOnUnit(ObjectManager.Player);
             }
             if (useQ && _q.IsReady())
             {
-                var t = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
                 var prediction = _q.GetPrediction(t);
                 if (t != null && _player.Distance(t) < _q.Range && prediction.Hitchance >= Qchangecombo())
-                    _q.Cast(prediction.CastPosition, Packets());
+                    _q.Cast(prediction.CastPosition);
             }
             if (useE && _e.IsReady())
             {
-                var t = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
                 var predictione = _e.GetPrediction(t);
                 if (t != null && _player.Distance(t) < _e.Range && predictione.Hitchance >= Echangecombo())
-                    _e.Cast(predictione.CastPosition, Packets());
+                    _e.Cast(predictione.CastPosition);
             }
             if (useR && _r.IsReady() && GetBuffStacks() < rLim)
             {
-                var t = SimpleTs.GetTarget(_r.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
                 var predictionr = _r.GetPrediction(t);
                 if (t != null && _player.Distance(t) < _r.Range && predictionr.Hitchance >= Rchangecombo())
-                    _r.Cast(predictionr.CastPosition, Packets());
+                    _r.Cast(predictionr.CastPosition);
             }
             UseItemes(etarget);
         }
@@ -404,6 +418,11 @@ namespace D_Kogmaw
             var iBlademyhp = _player.Health <=
                              (_player.MaxHealth*(_config.Item("Blademyhp").GetValue<Slider>().Value)/100);
             var iYoumuu = _config.Item("Youmuu").GetValue<bool>();
+            var iHextech = _config.Item("Hextech").GetValue<bool>();
+            var iHextechEnemyhp = target.Health <=
+                                  (target.MaxHealth * (_config.Item("HextechEnemyhp").GetValue<Slider>().Value) / 100);
+            var iHextechmyhp = _player.Health <=
+                               (_player.MaxHealth * (_config.Item("Hextechmyhp").GetValue<Slider>().Value) / 100);
 
             if (_player.Distance(target) <= 450 && iBilge && (iBilgeEnemyhp || iBilgemyhp) && _bilge.IsReady())
             {
@@ -419,9 +438,13 @@ namespace D_Kogmaw
             {
                 _youmuu.Cast();
             }
+            if (_player.Distance(target) <= 700 && iHextech && (iHextechEnemyhp || iHextechmyhp) && _hextech.IsReady())
+            {
+                _hextech.Cast(target);
+            }
         }
 
-        private static void Orbwalking_AfterAttack(Obj_AI_Base unit, Obj_AI_Base target)
+        private static void Orbwalking_AfterAttack(AttackableUnit unit, AttackableUnit target)
         {
             var useQ = _config.Item("UseQC").GetValue<bool>();
             var useW = _config.Item("UseWC").GetValue<bool>();
@@ -437,28 +460,31 @@ namespace D_Kogmaw
                 }
                 if (useQ && _q.IsReady())
                 {
-                    var prediction = _q.GetPrediction(target);
+                    var t = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
+                    var prediction = _q.GetPrediction(t);
                     if (_player.Distance(target) < _q.Range && prediction.Hitchance >= HitChance.Medium)
-                        _q.Cast(prediction.CastPosition, Packets());
+                        _q.Cast(prediction.CastPosition);
                 }
                 if (useE && _e.IsReady())
                 {
-                    var predictione = _e.GetPrediction(target);
+                    var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
+                    var predictione = _e.GetPrediction(t);
                     if (_player.Distance(target) < _e.Range && predictione.Hitchance >= HitChance.Medium)
-                        _e.Cast(predictione.CastPosition, Packets());
+                        _e.Cast(predictione.CastPosition);
                 }
                 if (useR && _r.IsReady() && GetBuffStacks() < rLim)
                 {
-                    var predictionr = _r.GetPrediction(target);
+                    var t = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
+                    var predictionr = _r.GetPrediction(t);
                     if (_player.Distance(target) < _r.Range && predictionr.Hitchance >= HitChance.Medium)
-                        _r.Cast(predictionr.CastPosition, Packets());
+                        _r.Cast(predictionr.CastPosition);
                 }
             }
         }
 
         private static void Harass()
         {
-            var eTarget = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Physical);
+            var eTarget = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Physical);
             var useQ = _config.Item("UseQH").GetValue<bool>();
             var useW = _config.Item("UseWH").GetValue<bool>();
             var useE = _config.Item("UseEH").GetValue<bool>();
@@ -474,23 +500,23 @@ namespace D_Kogmaw
             }
             if (useQ && _q.IsReady())
             {
-                var t = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _q.Range && _q.GetPrediction(t).Hitchance >= Qchangehar())
-                    _q.Cast(t, Packets());
+                    _q.Cast(t);
             }
 
             if (useE && _e.IsReady())
             {
-                var t = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _e.Range && _e.GetPrediction(t).Hitchance >= Echangehar())
-                    _e.Cast(t, Packets(), true);
+                    _e.Cast(t);
             }
 
             if (useR && _r.IsReady() && GetBuffStacks() < rLimH)
             {
-                var t = SimpleTs.GetTarget(_r.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _r.Range && _r.GetPrediction(t).Hitchance >= Rchangehar())
-                    _r.Cast(t, Packets(), true);
+                    _r.Cast(t);
             }
         }
 
@@ -721,14 +747,14 @@ namespace D_Kogmaw
             }
         }
 
-        private static bool Packets()
+        /*private static bool Packets()
         {
             return _config.Item("usePackets").GetValue<bool>();
-        }
+        }*/
 
         private static void KillSteal()
         {
-            var target = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
             var igniteDmg = _player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
             if (target != null && _config.Item("useigniteks").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
                 _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)

@@ -94,7 +94,7 @@ namespace D_Elise
 
             //TargetSelector
             var targetSelectorMenu = new Menu("Target Selector", "Target Selector");
-            SimpleTs.AddToMenu(targetSelectorMenu);
+            TargetSelector.AddToMenu(targetSelectorMenu);
             _config.AddSubMenu(targetSelectorMenu);
 
             //Orbwalker
@@ -406,7 +406,7 @@ namespace D_Elise
 
         private static void Combo()
         {
-            var target = SimpleTs.GetTarget(_humanW.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_humanW.Range, TargetSelector.DamageType.Magical);
             var sReady = (_smiteSlot != SpellSlot.Unknown && ObjectManager.Player.Spellbook.CanUseSpell(_smiteSlot) == SpellState.Ready);
             var qdmg = _player.GetSpellDamage(target, SpellSlot.Q);
             var wdmg = _player.GetSpellDamage(target, SpellSlot.W);
@@ -479,7 +479,7 @@ namespace D_Elise
 
         private static void Harass()
         {
-            var target = SimpleTs.GetTarget(_humanQ.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_humanQ.Range, TargetSelector.DamageType.Magical);
             if (target != null)
             {
 
@@ -734,7 +734,7 @@ namespace D_Elise
         private static void AutoE()
         {
             _player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
-            var target = SimpleTs.GetTarget(_humanE.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_humanE.Range, TargetSelector.DamageType.Magical);
 
             if (_human && _player.Distance(target) < _humanE.Range && _humanE.IsReady() && _humanE.GetPrediction(target).Hitchance >= HitChance.VeryHigh)
             {
@@ -854,7 +854,7 @@ namespace D_Elise
 
         private static void KillSteal()
         {
-            var target = SimpleTs.GetTarget(_humanQ.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_humanQ.Range, TargetSelector.DamageType.Magical);
             var igniteDmg = _player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
             var qhDmg = _player.GetSpellDamage(target, SpellSlot.Q);
             var wDmg = _player.GetSpellDamage(target, SpellSlot.W);

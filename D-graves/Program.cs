@@ -51,7 +51,7 @@ namespace D_Graves
 
             //TargetSelector
             var targetSelectorMenu = new Menu("Target Selector", "Target Selector");
-            SimpleTs.AddToMenu(targetSelectorMenu);
+            TargetSelector.AddToMenu(targetSelectorMenu);
             _config.AddSubMenu(targetSelectorMenu);
 
             //Orbwalker
@@ -290,7 +290,7 @@ namespace D_Graves
 
         private static void Combo()
         {
-            var target = SimpleTs.GetTarget(_r.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
             var useQ = _config.Item("UseQC").GetValue<bool>();
             var useW = _config.Item("UseWC").GetValue<bool>();
             var useR = _config.Item("UseRC").GetValue<bool>();
@@ -299,20 +299,20 @@ namespace D_Graves
             var useRcombo = _config.Item("UseRcombo").GetValue<bool>();
             if (useQ && _q.IsReady())
             {
-                var t = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _q.Range - 70 && _q.GetPrediction(t).Hitchance >= Qchange())
                     _q.Cast(t, Packets(), true);
             }
             if (useW && _w.IsReady())
             {
-                var t = SimpleTs.GetTarget(_w.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_w.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _w.Range && _w.GetPrediction(t).Hitchance >= Wchange())
                     _w.Cast(t, Packets(), true);
             }
             Fuckinge(target);
             if (_r.IsReady() && useRcombo)
             {
-                var t = SimpleTs.GetTarget(_r.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
                 if (_config.Item("castR" + t.BaseSkinName) != null &&
                     _config.Item("castR" + t.BaseSkinName).GetValue<bool>() == true && !t.HasBuff("JudicatorIntervention") && !t.HasBuff("Undying Rage") &&
                     _r.GetPrediction(t).Hitchance >= Rchange())
@@ -330,7 +330,7 @@ namespace D_Graves
 
             if (_r.IsReady() && autoR && useRcombo)
             {
-                var t = SimpleTs.GetTarget(_r.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
                 if (ObjectManager.Get<Obj_AI_Hero>().Count(hero => hero.IsValidTarget(_r.Range)) >=
                     _config.Item("MinTargets").GetValue<Slider>().Value
                     && _r.GetPrediction(t).Hitchance >= Rchange())
@@ -351,7 +351,7 @@ namespace D_Graves
                 return;
             }
         }
-        private static void Orbwalking_AfterAttack(Obj_AI_Base unit, Obj_AI_Base target)
+        private static void Orbwalking_AfterAttack(AttackableUnit unit, AttackableUnit target)
         {
             var useQ = _config.Item("UseQC").GetValue<bool>();
             var useW = _config.Item("UseWC").GetValue<bool>();
@@ -360,13 +360,13 @@ namespace D_Graves
             {
                 if (useQ && _q.IsReady())
                 {
-                    var t = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+                    var t = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
                     if (t != null && _player.Distance(t) < _q.Range - 70 && _q.GetPrediction(t).Hitchance >= Qchange())
                         _q.Cast(t, Packets(), true);
                 }
                 if (useW && _w.IsReady())
                 {
-                    var t = SimpleTs.GetTarget(_w.Range, SimpleTs.DamageType.Magical);
+                    var t = TargetSelector.GetTarget(_w.Range, TargetSelector.DamageType.Magical);
                     if (t != null && _player.Distance(t) < _w.Range && _w.GetPrediction(t).Hitchance >= Wchange())
                         _w.Cast(t, Packets(), true);
                 }
@@ -380,13 +380,13 @@ namespace D_Graves
 
             if (useQ && _q.IsReady())
             {
-                var t = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _q.Range - 70 && _q.GetPrediction(t).Hitchance >= Qchangeharass())
                     _q.Cast(t, Packets(), true);
             }
             if (useW && _w.IsReady())
             {
-                var t = SimpleTs.GetTarget(_w.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_w.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _w.Range && _w.GetPrediction(t).Hitchance >= Wchangeharass())
                     _w.Cast(t, Packets(), true);
             }
@@ -649,7 +649,7 @@ namespace D_Graves
         {
             if (_q.IsReady() && _config.Item("UseQM").GetValue<bool>())
             {
-                var t = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
                 if (_q.GetDamage(t) > t.Health && _player.Distance(t) <= _q.Range - 30 &&
                     _q.GetPrediction(t).Hitchance >= Qchangekill())
                 {
@@ -658,7 +658,7 @@ namespace D_Graves
             }
             if (_w.IsReady() && _config.Item("UseWM").GetValue<bool>())
             {
-                var t = SimpleTs.GetTarget(_w.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_w.Range, TargetSelector.DamageType.Magical);
                 if (_w.GetDamage(t) > t.Health && _player.Distance(t) <= _w.Range &&
                     _q.GetPrediction(t).Hitchance >= Wchangekill())
                 {
@@ -667,7 +667,7 @@ namespace D_Graves
             }
             if (_r.IsReady() && _config.Item("UseRM").GetValue<bool>())
             {
-                var t = SimpleTs.GetTarget(_r.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
                 if (_config.Item("castRkill" + t.BaseSkinName) != null &&
                     _config.Item("castRkill" + t.BaseSkinName).GetValue<bool>() == true &&
                     !t.HasBuff("JudicatorIntervention") && !t.HasBuff("Undying Rage") &&

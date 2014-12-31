@@ -71,7 +71,7 @@ namespace D_Kayle
 
             //TargetSelector
             var targetSelectorMenu = new Menu("Target Selector", "Target Selector");
-            SimpleTs.AddToMenu(targetSelectorMenu);
+            TargetSelector.AddToMenu(targetSelectorMenu);
             _config.AddSubMenu(targetSelectorMenu);
 
             //Orbwalker
@@ -333,7 +333,7 @@ namespace D_Kayle
 
         private static void Combo()
         {
-            var target = SimpleTs.GetTarget(_r.Range + 200, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_r.Range + 200, TargetSelector.DamageType.Magical);
 
             if (target != null)
             {
@@ -374,7 +374,7 @@ namespace D_Kayle
 
         private static void Escape()
         {
-            var target = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
             _player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
             if (_player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready && _player.IsMe)
             {
@@ -391,7 +391,7 @@ namespace D_Kayle
 
         private static void Harass()
         {
-            var target = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
             if (target != null)
             {
 
@@ -516,7 +516,7 @@ namespace D_Kayle
 
         private static void KillSteal()
         {
-            var target = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
             var igniteDmg = _player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
             var qhDmg = _player.GetSpellDamage(target, SpellSlot.Q);
 

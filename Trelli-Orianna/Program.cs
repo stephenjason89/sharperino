@@ -133,7 +133,7 @@ namespace Orianna
             Config = new Menu(ChampionName, ChampionName, true);
 
             var TargetSelectorMenu = new Menu("Target Selector", "Target Selector");
-            SimpleTs.AddToMenu(TargetSelectorMenu);
+            TargetSelector.AddToMenu(TargetSelectorMenu);
             Config.AddSubMenu(TargetSelectorMenu);
 
             Config.AddSubMenu(new Menu("Orbwalking", "Orbwalking"));
@@ -237,7 +237,7 @@ namespace Orianna
                 ((Config.Item("HarassActive").GetValue<KeyBind>().Active || Config.Item("HarassActiveT").GetValue<KeyBind>().Active) &&
                     (ObjectManager.Player.Mana / ObjectManager.Player.MaxMana * 100) > Config.Item("ManaSliderHarass").GetValue<Slider>().Value))
             {
-                target = SimpleTs.GetTarget(1125f, SimpleTs.DamageType.Magical);
+                target = TargetSelector.GetTarget(1125f, TargetSelector.DamageType.Magical);
                 if (target != null)
                 {
                     var comboActive = Config.Item("ComboActive").GetValue<KeyBind>().Active;
@@ -350,7 +350,7 @@ namespace Orianna
 
             if (Config.Item("FarmActive").GetValue<KeyBind>().Active || Config.Item("JungleFarmActive").GetValue<KeyBind>().Active)
             {
-                var farmTarget = SimpleTs.GetTarget(1125f, SimpleTs.DamageType.Magical);
+                var farmTarget = TargetSelector.GetTarget(1125f, TargetSelector.DamageType.Magical);
                 if (farmTarget != null && Config.Item("FarmActive").GetValue<KeyBind>().Active)
                 {
                     FarmWTarget(farmTarget);
@@ -741,7 +741,7 @@ namespace Orianna
             {
                 foreach (Obj_AI_Hero current in ObjectManager.Get<Obj_AI_Hero>())
                 {
-                    target = SimpleTs.GetTarget(1125f, SimpleTs.DamageType.Magical);
+                    target = TargetSelector.GetTarget(1125f, TargetSelector.DamageType.Magical);
                     String champName = current.BaseSkinName;
                     String result;
                     List<string> spellList;

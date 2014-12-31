@@ -66,7 +66,7 @@ namespace D_Warwick
 
             //TargetSelector
             TargetSelectorMenu = new Menu("Target Selector", "Target Selector");
-            SimpleTs.AddToMenu(TargetSelectorMenu);
+            TargetSelector.AddToMenu(TargetSelectorMenu);
             _config.AddSubMenu(TargetSelectorMenu);
 
 
@@ -247,7 +247,7 @@ namespace D_Warwick
         {
             if (_config.Item("myass").GetValue<bool>())
             {
-                var target = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Physical);
+                var target = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Physical);
                 var minions = MinionManager.GetMinions(ObjectManager.Player.Position, _q.Range,
                     MinionTypes.All, MinionTeam.NotAlly);
                 var useminion = _player.Health <=
@@ -287,7 +287,7 @@ namespace D_Warwick
 
         private static void Combo()
         {
-            var target = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Physical);
+            var target = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Physical);
             var useQ = _config.Item("useQC").GetValue<bool>();
             var useW = _config.Item("useWC").GetValue<bool>();
             var useR = _config.Item("UseRC").GetValue<bool>();
@@ -323,19 +323,19 @@ namespace D_Warwick
 
         private static void Harass()
         {
-              var target = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
             var useQ = _config.Item("useQH").GetValue<bool>();
             var useW = _config.Item("useWH").GetValue<bool>();
             var useItemsH = _config.Item("UseItemsharass").GetValue<bool>();
             if (useQ && _q.IsReady())
             {
-                var t = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
                 if (t != null && t.Distance(_player.Position) < _q.Range)
                     _q.Cast(t);
             }
             if (useW && _w.IsReady())
             {
-                var t = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
                 if (t != null && t.Distance(_player.Position) < _q.Range)
                     _w.Cast();
             }
@@ -577,7 +577,7 @@ namespace D_Warwick
 
         private static void KillSteal()
         {
-            var target = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
             var igniteDmg = _player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
             if (target != null && _config.Item("UseIgnitekill").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
                 _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
@@ -589,7 +589,7 @@ namespace D_Warwick
             }
             if (_q.IsReady() && _config.Item("UseQM").GetValue<bool>())
             {
-                var t = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
                 if (_q.GetDamage(t) > t.Health && _player.Distance(t) <= _q.Range)
                 {
                     _q.Cast(t);
@@ -597,7 +597,7 @@ namespace D_Warwick
             }
             if (_r.IsReady() && _config.Item("UseRM").GetValue<bool>())
             {
-                var t = SimpleTs.GetTarget(_r.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
                 if (t != null)
                     if (!t.HasBuff("JudicatorIntervention") && !t.HasBuff("Undying Rage") && _r.GetDamage(t) > t.Health)
                         _r.Cast(t);

@@ -77,7 +77,7 @@ namespace D_Jarvan
 
             //TargetSelector
             var targetSelectorMenu = new Menu("Target Selector", "Target Selector");
-            SimpleTs.AddToMenu(targetSelectorMenu);
+            TargetSelector.AddToMenu(targetSelectorMenu);
             _config.AddSubMenu(targetSelectorMenu);
 
 
@@ -431,7 +431,7 @@ namespace D_Jarvan
             var useE = _config.Item("UseEC").GetValue<bool>();
             var useR = _config.Item("UseRC").GetValue<bool>();
             var autoR = _config.Item("UseRE").GetValue<bool>();
-            var t = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+            var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
             Smiteontarget(t);
             if (t != null && _config.Item("UseIgnite").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
                 _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
@@ -498,7 +498,7 @@ namespace D_Jarvan
                             _player.Spellbook.GetSpell(SpellSlot.Q).ManaCost +
                             _player.Spellbook.GetSpell(SpellSlot.E).ManaCost +
                             _player.Spellbook.GetSpell(SpellSlot.R).ManaCost;
-            var t = SimpleTs.GetTarget(_q.Range + _r.Range, SimpleTs.DamageType.Magical);
+            var t = TargetSelector.GetTarget(_q.Range + _r.Range, TargetSelector.DamageType.Magical);
             if (t == null)
             {
                 _player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
@@ -537,7 +537,7 @@ namespace D_Jarvan
 
         private static void Harass()
         {
-            var target = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
             var useQ = _config.Item("UseQH").GetValue<bool>();
             var useE = _config.Item("UseEH").GetValue<bool>();
             var useEq = _config.Item("UseEQH").GetValue<bool>();
@@ -545,20 +545,20 @@ namespace D_Jarvan
             var useItemsH = _config.Item("UseItemsharass").GetValue<bool>();
             if (useEqhp && useEq && _q.IsReady() && _e.IsReady())
             {
-                var t = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
                 if (t != null && t.Distance(_player.Position) < _e.Range)
                     _e.Cast(t, Packets());
                 _q.Cast(t, Packets());
             }
             if (useQ && _q.IsReady())
             {
-                var t = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
                 if (t != null && t.Distance(_player.Position) < _q.Range)
                     _q.Cast(t, Packets());
             }
             if (useE && _e.IsReady())
             {
-                var t = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
                 if (t != null && t.Distance(_player.Position) < _e.Range)
                     _e.Cast(t, Packets());
             }
@@ -579,7 +579,7 @@ namespace D_Jarvan
             var manacheck = _player.Mana >
                             _player.Spellbook.GetSpell(SpellSlot.Q).ManaCost +
                             _player.Spellbook.GetSpell(SpellSlot.E).ManaCost;
-            var t = SimpleTs.GetTarget(_q.Range + 800, SimpleTs.DamageType.Magical);
+            var t = TargetSelector.GetTarget(_q.Range + 800, TargetSelector.DamageType.Magical);
             if (t == null)
             {
                 _player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
@@ -927,7 +927,7 @@ namespace D_Jarvan
 
         private static void KillSteal()
         {
-            var target = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
             var igniteDmg = _player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
             if (target != null && _config.Item("UseIgnitekill").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
                 _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
@@ -939,7 +939,7 @@ namespace D_Jarvan
             }
             if (_q.IsReady() && _config.Item("UseQM").GetValue<bool>())
             {
-                var t = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
                 if (_q.GetDamage(t) > t.Health && _player.Distance(t) <= _q.Range)
                 {
                     _q.Cast(t, Packets());
@@ -947,7 +947,7 @@ namespace D_Jarvan
             }
             if (_r.IsReady() && _config.Item("UseRM").GetValue<bool>())
             {
-                var t = SimpleTs.GetTarget(_r.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
                 if (t != null)
                     if (!t.HasBuff("JudicatorIntervention") && !t.HasBuff("Undying Rage") && _r.GetDamage(t) > t.Health)
                         _r.Cast(t, Packets(), true);
@@ -960,7 +960,7 @@ namespace D_Jarvan
                             _player.Spellbook.GetSpell(SpellSlot.Q).ManaCost +
                             _player.Spellbook.GetSpell(SpellSlot.E).ManaCost;
             _player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
-            var target = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
 
             if (_config.Item("UseEQF").GetValue<bool>() && _q.IsReady() && _e.IsReady() && manacheck)
             {
@@ -977,8 +977,8 @@ namespace D_Jarvan
 
         private static void OnCreateObj(GameObject sender, EventArgs args)
         {
-            if (!(sender is Obj_GeneralParticleEmmiter)) return;
-            var obj = (Obj_GeneralParticleEmmiter) sender;
+            if (!(sender is Obj_SpellMissile)) return;
+            var obj = (Obj_SpellMissile)sender;
             if (sender.Name == "JarvanDemacianStandard_buf_green.troy")
             {
                 _epos = sender.Position;
@@ -996,12 +996,12 @@ namespace D_Jarvan
 
         private static void OnDeleteObj(GameObject sender, EventArgs args)
         {
-            if (!(sender is Obj_GeneralParticleEmmiter)) return;
+            if (!(sender is Obj_SpellMissile)) return;
             if (sender.Name == "JarvanDemacianStandard_buf_green.troy")
             {
                 _epos = default(Vector3);
             }
-            var obj = (Obj_GeneralParticleEmmiter) sender;
+            var obj = (Obj_SpellMissile)sender;
             if (obj != null && obj.IsMe && obj.Name == "JarvanCataclysm_tar")
             {
                 _haveulti = false;

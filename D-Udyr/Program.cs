@@ -82,7 +82,7 @@ namespace D_Udyr
 
             //TargetSelector
             var targetSelectorMenu = new Menu("Target Selector", "Target Selector");
-            SimpleTs.AddToMenu(targetSelectorMenu);
+            TargetSelector.AddToMenu(targetSelectorMenu);
             _config.AddSubMenu(targetSelectorMenu);
 
             //Orbwalker
@@ -494,8 +494,8 @@ namespace D_Udyr
         {
             //Create target
 
-            var target = SimpleTs.GetTarget(_config.Item("TargetRange").GetValue<Slider>().Value,
-                SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_config.Item("TargetRange").GetValue<Slider>().Value,
+                TargetSelector.DamageType.Magical);
 
             if (target != null && _player.Distance(target) <= _config.Item("TargetRange").GetValue<Slider>().Value)
             {

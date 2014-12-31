@@ -46,7 +46,7 @@ namespace D_Corki
 
             //TargetSelector
             var targetSelectorMenu = new Menu("Target Selector", "Target Selector");
-            SimpleTs.AddToMenu(targetSelectorMenu);
+            TargetSelector.AddToMenu(targetSelectorMenu);
             _config.AddSubMenu(targetSelectorMenu);
 
             //Orbwalker
@@ -216,7 +216,7 @@ namespace D_Corki
 
         private static void Combo()
         {
-            var target = SimpleTs.GetTarget(_r.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
             var useQ = _config.Item("UseQC").GetValue<bool>();
             var useE = _config.Item("UseEC").GetValue<bool>();
             var useR = _config.Item("UseRC").GetValue<bool>();
@@ -224,20 +224,20 @@ namespace D_Corki
 
             if (useQ && _q.IsReady())
             {
-                var t = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _q.Range && _q.GetPrediction(t).Hitchance >= Qchangecombo())
                     _q.Cast(t, Packets(), true);
             }
             Fuckingw(target);
             if (useE && _e.IsReady())
             {
-                var t = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _e.Range && _e.GetPrediction(t).Hitchance >= Echangecombo())
                     _e.Cast(t, Packets(), true);
             }
             if (useR && _r.IsReady())
             {
-                var t = SimpleTs.GetTarget(_r.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _r.Range && _r.GetPrediction(t).Hitchance >= Rchangecombo())
                     _r.Cast(t, Packets(), true);
             }
@@ -265,25 +265,25 @@ namespace D_Corki
             var rlimH = _config.Item("RlimH").GetValue<Slider>().Value;
             if (useQ && _q.IsReady())
             {
-                var t = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _q.Range && _q.GetPrediction(t).Hitchance >= Qchangehar())
                     _q.Cast(t, Packets(), true);
             }
             if (useE && _e.IsReady())
             {
-                var t = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _e.Range && _e.GetPrediction(t).Hitchance >= Echangehar())
                     _e.Cast(t, Packets(), true);
             }
             if (useR && _r.IsReady() && rlimH < UltiStucks())
             {
-                var t = SimpleTs.GetTarget(_r.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _r.Range && _r.GetPrediction(t).Hitchance >= Rchangehar())
                     _r.Cast(t, Packets(), true);
             }
         }
 
-        public static void Orbwalking_AfterAttack(Obj_AI_Base unit, Obj_AI_Base target)
+        private static void Orbwalking_AfterAttack(AttackableUnit unit, AttackableUnit target)
         {
             if ((!_config.Item("ActiveCombo").GetValue<KeyBind>().Active) || !unit.IsMe || (!(target is Obj_AI_Hero)))
                 return;
@@ -292,19 +292,19 @@ namespace D_Corki
             var useR = _config.Item("UseRC").GetValue<bool>();
             if (useQ && _q.IsReady())
             {
-                var t = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _q.Range && _q.GetPrediction(t).Hitchance >= Qchangecombo())
                     _q.Cast(t, Packets(), true);
             }
             if (useE && _e.IsReady())
             {
-                var t = SimpleTs.GetTarget(_e.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _e.Range && _e.GetPrediction(t).Hitchance >= Echangecombo())
                     _e.Cast(t, Packets(), true);
             }
             if (useR && _r.IsReady())
             {
-                var t = SimpleTs.GetTarget(_r.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
                 if (t != null && _player.Distance(t) < _r.Range && _r.GetPrediction(t).Hitchance >= Rchangecombo())
                     _r.Cast(t, Packets(), true);
             }
@@ -438,19 +438,19 @@ namespace D_Corki
         {
             if (_q.IsReady() && _config.Item("UseQM").GetValue<bool>())
             {
-                var t = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
                 if (_q.GetDamage(t) > t.Health && _player.Distance(t) <= _q.Range && _q.GetPrediction(t).Hitchance >= Qchangekil())
                     _q.Cast(t, Packets(), true);
             }
             if (_e.IsReady() && _config.Item("UseEM").GetValue<bool>())
             {
-                var t = SimpleTs.GetTarget(_w.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_w.Range, TargetSelector.DamageType.Magical);
                 if (_e.GetDamage(t) > t.Health && _player.Distance(t) <= _e.Range && _e.GetPrediction(t).Hitchance >= Echangekil())
                     _e.Cast(t, Packets(), true);
             }
             if (_r.IsReady() && _config.Item("UseRM").GetValue<bool>())
             {
-                var t = SimpleTs.GetTarget(_r.Range, SimpleTs.DamageType.Magical);
+                var t = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
                 var bigRocket = HasBigRocket();
                 foreach (
                     var hero in

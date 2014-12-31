@@ -79,7 +79,7 @@ namespace D_Diana
 
             //TargetSelector
             TargetSelectorMenu = new Menu("Target Selector", "Target Selector");
-            SimpleTs.AddToMenu(TargetSelectorMenu);
+            TargetSelector.AddToMenu(TargetSelectorMenu);
             _config.AddSubMenu(TargetSelectorMenu);
 
             //Orbwalker
@@ -309,7 +309,7 @@ namespace D_Diana
                 }
 
                 Obj_AI_Hero t = !objAiHeroes.Any()
-                    ? SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical)
+                    ? TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical)
                     : objAiHeroes[0];
                 if (_config.Item("Misayacombo").GetValue<bool>())
                 {
@@ -577,7 +577,7 @@ namespace D_Diana
 
         private static void Harass()
         {
-            var target = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
             if (target != null)
             {
                 if (_player.Distance(target) <= _q.Range && _config.Item("UseQHarass").GetValue<bool>() && _q.IsReady())
@@ -794,7 +794,7 @@ namespace D_Diana
 
         private static void KillSteal()
         {
-            var target = SimpleTs.GetTarget(_q.Range, SimpleTs.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
             var igniteDmg = _player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
             var qhDmg = _player.GetSpellDamage(target, SpellSlot.Q);
             var rhDmg = _player.GetSpellDamage(target, SpellSlot.R);

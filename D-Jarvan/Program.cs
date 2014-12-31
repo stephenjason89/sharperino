@@ -977,8 +977,8 @@ namespace D_Jarvan
 
         private static void OnCreateObj(GameObject sender, EventArgs args)
         {
-            if (!(sender is Obj_SpellMissile)) return;
-            var obj = (Obj_SpellMissile)sender;
+            if (!(sender is Obj_GeneralParticleEmitter)) return;
+            var obj = (Obj_GeneralParticleEmitter)sender;
             if (sender.Name == "JarvanDemacianStandard_buf_green.troy")
             {
                 _epos = sender.Position;
@@ -996,12 +996,12 @@ namespace D_Jarvan
 
         private static void OnDeleteObj(GameObject sender, EventArgs args)
         {
-            if (!(sender is Obj_SpellMissile)) return;
+            if (!(sender is Obj_GeneralParticleEmitter)) return;
             if (sender.Name == "JarvanDemacianStandard_buf_green.troy")
             {
                 _epos = default(Vector3);
             }
-            var obj = (Obj_SpellMissile)sender;
+            var obj = (Obj_GeneralParticleEmitter)sender;
             if (obj != null && obj.IsMe && obj.Name == "JarvanCataclysm_tar")
             {
                 _haveulti = false;

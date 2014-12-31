@@ -834,20 +834,19 @@ namespace D_Nidalee
         private static void OnCreateObj(GameObject sender, EventArgs args)
         {
             //Recall
-            if (!(sender is Obj_SpellMissile)) return;
-            var obj = (Obj_SpellMissile) sender;
+            if (!(sender is Obj_GeneralParticleEmitter)) return;
+            var obj = (Obj_GeneralParticleEmitter)sender;
             if (obj != null && obj.IsMe && obj.Name == "TeleportHome")
             {
                 Recall = true;
             }
-
         }
 
         private static void OnDeleteObj(GameObject sender, EventArgs args)
         {
             //Recall
-            if (!(sender is Obj_SpellMissile)) return;
-            var obj = (Obj_SpellMissile) sender;
+            if (!(sender is Obj_GeneralParticleEmitter)) return;
+            var obj = (Obj_GeneralParticleEmitter)sender;
             if (obj != null && obj.IsMe && obj.Name == "TeleportHome")
             {
                 Recall = false;

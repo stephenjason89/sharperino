@@ -446,7 +446,7 @@ namespace D_Diana
                 {
                     _dfg.Cast(target);
                 }
-                if (_igniteSlot != SpellSlot.Unknown &&
+                if (_igniteSlot != SpellSlot.Unknown && ignitecombo &&
                     _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
                 {
                     if (target.Health <= ComboDamage(target))

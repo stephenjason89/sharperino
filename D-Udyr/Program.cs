@@ -155,7 +155,21 @@ namespace D_Udyr
             _config.SubMenu("items")
                 .SubMenu("Deffensive")
                 .AddItem(new MenuItem("lotisminhp", "Solari if Ally Hp<  ").SetValue(new Slider(35, 1, 100)));
-
+            _config.SubMenu("items").AddSubMenu(new Menu("Potions", "Potions"));
+            _config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usehppotions", "Use Healt potion/Flask/Biscuit"))
+                .SetValue(true);
+            _config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usepotionhp", "If Health % <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usemppotions", "Use Mana potion/Flask/Biscuit"))
+                .SetValue(true);
+            _config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usepotionmp", "If Mana % <").SetValue(new Slider(85, 1, 100)));
 
 
             //Farm
@@ -243,7 +257,7 @@ namespace D_Udyr
             {
                 Smiteuse();
             }
-
+            Usepotion();
             _orbwalker.SetAttack(true);
 
             _orbwalker.SetMovement(true);
@@ -438,11 +452,7 @@ namespace D_Udyr
             var iTiamat = _config.Item("Tiamat").GetValue<bool>();
             var iHydra = _config.Item("Hydra").GetValue<bool>();
             var ilotis = _config.Item("lotis").GetValue<bool>();
-            //var ihp = _config.Item("Hppotion").GetValue<bool>();
-            // var ihpuse = _player.Health <= (_player.MaxHealth * (_config.Item("Hppotionuse").GetValue<Slider>().Value) / 100);
-            //var imp = _config.Item("Mppotion").GetValue<bool>();
-            //var impuse = _player.Health <= (_player.MaxHealth * (_config.Item("Mppotionuse").GetValue<Slider>().Value) / 100);
-
+           
             if (_player.Distance(target) <= 450 && iBilge && (iBilgeEnemyhp || iBilgemyhp) && _bilge.IsReady())
             {
                 _bilge.Cast(target);
@@ -479,10 +489,69 @@ namespace D_Udyr
             }
 
         }
+        private static void Usepotion()
+        {
+            var mobs = MinionManager.GetMinions(_player.ServerPosition, 400,
+                MinionTypes.All,
+                MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
+            var iusehppotion = _config.Item("usehppotions").GetValue<bool>();
+            var iusepotionhp = _player.Health <=
+                               (_player.MaxHealth * (_config.Item("usepotionhp").GetValue<Slider>().Value) / 100);
+            var iusemppotion = _config.Item("usemppotions").GetValue<bool>();
+            var iusepotionmp = _player.Mana <=
+                               (_player.MaxMana * (_config.Item("usepotionmp").GetValue<Slider>().Value) / 100);
+            if (Utility.InFountain() || ObjectManager.Player.HasBuff("Recall")) return;
+
+            if (Utility.CountEnemysInRange(800) > 0 ||
+                (mobs.Count > 0 && _config.Item("ActiveJungle").GetValue<KeyBind>().Active && (Items.HasItem(1039) ||
+                 SmiteBlue.Any(i => Items.HasItem(i)) || SmiteRed.Any(i => Items.HasItem(i)) || SmitePurple.Any(i => Items.HasItem(i)) ||
+                  SmiteBlue.Any(i => Items.HasItem(i)) || SmiteGrey.Any(i => Items.HasItem(i))
+                     )))
+            {
+                if (iusepotionhp && iusehppotion &&
+                     !(ObjectManager.Player.HasBuff("RegenerationPotion", true) ||
+                       ObjectManager.Player.HasBuff("ItemCrystalFlask", true) ||
+                       ObjectManager.Player.HasBuff("ItemMiniRegenPotion", true)))
+                {
+                    if (Items.HasItem(2041) && Items.CanUseItem(2041))
+                    {
+                        Items.UseItem(2041);
+                    }
+                    else if (Items.HasItem(2010) && Items.CanUseItem(2010))
+                    {
+                        Items.UseItem(2010);
+                    }
+                    else if (Items.HasItem(2003) && Items.CanUseItem(2003))
+                    {
+                        Items.UseItem(2003);
+                    }
+                }
+
+
+                if (iusepotionmp && iusemppotion &&
+                    !(ObjectManager.Player.HasBuff("FlaskOfCrystalWater", true) ||
+                      ObjectManager.Player.HasBuff("ItemCrystalFlask", true) ||
+                      ObjectManager.Player.HasBuff("ItemMiniRegenPotion", true)))
+                {
+                    if (Items.HasItem(2041) && Items.CanUseItem(2041))
+                    {
+                        Items.UseItem(2041);
+                    }
+                    else if (Items.HasItem(2010) && Items.CanUseItem(2010))
+                    {
+                        Items.UseItem(2010);
+                    }
+                    else if (Items.HasItem(2004) && Items.CanUseItem(2004))
+                    {
+                        Items.UseItem(2004);
+                    }
+                }
+            }
+        }
         private static void Smiteontarget(Obj_AI_Hero target)
         {
             var usesmite = _config.Item("smitecombo").GetValue<bool>();
-            var itemscheck = SmiteBlue.Any(Items.HasItem) || SmiteRed.Any(Items.HasItem);
+            var itemscheck = SmiteBlue.Any(i => Items.HasItem(i)) || SmiteRed.Any(i => Items.HasItem(i));
             if (itemscheck && usesmite &&
                 ObjectManager.Player.Spellbook.CanUseSpell(_smiteSlot) == SpellState.Ready &&
                 target.Distance(_player.Position) < _smite.Range)
@@ -588,19 +657,19 @@ namespace D_Udyr
         //Credits to Kurisu
         private static string Smitetype()
         {
-            if (SmiteBlue.Any(Items.HasItem))
+            if (SmiteBlue.Any(i => Items.HasItem(i)))
             {
                 return "s5_summonersmiteplayerganker";
             }
-            if (SmiteRed.Any(Items.HasItem))
+            if (SmiteRed.Any(i => Items.HasItem(i)))
             {
                 return "s5_summonersmiteduel";
             }
-            if (SmiteGrey.Any(Items.HasItem))
+            if (SmiteGrey.Any(i => Items.HasItem(i)))
             {
                 return "s5_summonersmitequick";
             }
-            if (SmitePurple.Any(Items.HasItem))
+            if (SmitePurple.Any(i => Items.HasItem(i)))
             {
                 return "itemsmiteaoe";
             }

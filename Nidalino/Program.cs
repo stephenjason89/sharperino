@@ -19,6 +19,11 @@ namespace D_Nidalee
 
         public static List<Spell> SpellList = new List<Spell>();
 
+        private static readonly int[] SmitePurple = { 3713, 3726, 3725, 3726, 3723 };
+        private static readonly int[] SmiteGrey = { 3711, 3722, 3721, 3720, 3719 };
+        private static readonly int[] SmiteRed = { 3715, 3718, 3717, 3716, 3714 };
+        private static readonly int[] SmiteBlue = { 3706, 3710, 3709, 3708, 3707 };
+
         private static Items.Item _tiamat, _hydra, _blade, _bilge, _rand, _lotis, _zhonya, _dfg;
 
         public static SpellSlot IgniteSlot;
@@ -173,6 +178,21 @@ namespace D_Nidalee
             Config.SubMenu("items")
                 .SubMenu("Deffensive")
                 .AddItem(new MenuItem("Zhonyashp", "Use Zhonya's if HP%<").SetValue(new Slider(20, 1, 100)));
+            Config.SubMenu("items").AddSubMenu(new Menu("Potions", "Potions"));
+            Config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usehppotions", "Use Healt potion/Flask/Biscuit"))
+                .SetValue(true);
+            Config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usepotionhp", "If Health % <").SetValue(new Slider(85, 1, 100)));
+            Config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usemppotions", "Use Mana potion/Flask/Biscuit"))
+                .SetValue(true);
+            Config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usepotionmp", "If Mana % <").SetValue(new Slider(85, 1, 100)));
 
             //Harass
             Config.AddSubMenu(new Menu("Harass", "Harass"));
@@ -309,6 +329,7 @@ namespace D_Nidalee
             {
                 KillSteal();
             }
+            Usepotion();
         }
 
         private static void Escapeterino()
@@ -565,11 +586,7 @@ namespace D_Nidalee
             var iZhonyas = Config.Item("Zhonyas").GetValue<bool>();
             var iZhonyashp = Player.Health <=
                              (Player.MaxHealth*(Config.Item("Zhonyashp").GetValue<Slider>().Value)/100);
-            //var ihp = _config.Item("Hppotion").GetValue<bool>();
-            // var ihpuse = _player.Health <= (_player.MaxHealth * (_config.Item("Hppotionuse").GetValue<Slider>().Value) / 100);
-            //var imp = _config.Item("Mppotion").GetValue<bool>();
-            //var impuse = _player.Health <= (_player.MaxHealth * (_config.Item("Mppotionuse").GetValue<Slider>().Value) / 100);
-
+           
             if (Player.Distance(target) <= 450 && iBilge && (iBilgeEnemyhp || iBilgemyhp) && _bilge.IsReady())
             {
                 _bilge.Cast(target);
@@ -610,7 +627,65 @@ namespace D_Nidalee
 
             }
         }
+        private static void Usepotion()
+        {
+            var mobs = MinionManager.GetMinions(Player.ServerPosition, Q.Range,
+                MinionTypes.All,
+                MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
+            var iusehppotion = Config.Item("usehppotions").GetValue<bool>();
+            var iusepotionhp = Player.Health <=
+                               (Player.MaxHealth * (Config.Item("usepotionhp").GetValue<Slider>().Value) / 100);
+            var iusemppotion = Config.Item("usemppotions").GetValue<bool>();
+            var iusepotionmp = Player.Mana <=
+                               (Player.MaxMana * (Config.Item("usepotionmp").GetValue<Slider>().Value) / 100);
+            if (Utility.InFountain() || ObjectManager.Player.HasBuff("Recall")) return;
 
+            if (Utility.CountEnemysInRange(800) > 0 ||
+                (mobs.Count > 0 && Config.Item("LaneClear").GetValue<KeyBind>().Active && (Items.HasItem(1039) ||
+                 SmiteBlue.Any(i => Items.HasItem(i)) || SmiteRed.Any(i => Items.HasItem(i)) || SmitePurple.Any(i => Items.HasItem(i)) ||
+                  SmiteBlue.Any(i => Items.HasItem(i)) || SmiteGrey.Any(i => Items.HasItem(i))
+                     )))
+            {
+                if (iusepotionhp && iusehppotion &&
+                     !(ObjectManager.Player.HasBuff("RegenerationPotion", true) ||
+                       ObjectManager.Player.HasBuff("ItemCrystalFlask", true) ||
+                       ObjectManager.Player.HasBuff("ItemMiniRegenPotion", true)))
+                {
+                    if (Items.HasItem(2041) && Items.CanUseItem(2041))
+                    {
+                        Items.UseItem(2041);
+                    }
+                    else if (Items.HasItem(2010) && Items.CanUseItem(2010))
+                    {
+                        Items.UseItem(2010);
+                    }
+                    else if (Items.HasItem(2003) && Items.CanUseItem(2003))
+                    {
+                        Items.UseItem(2003);
+                    }
+                }
+
+
+                if (iusepotionmp && iusemppotion &&
+                    !(ObjectManager.Player.HasBuff("FlaskOfCrystalWater", true) ||
+                      ObjectManager.Player.HasBuff("ItemCrystalFlask", true) ||
+                      ObjectManager.Player.HasBuff("ItemMiniRegenPotion", true)))
+                {
+                    if (Items.HasItem(2041) && Items.CanUseItem(2041))
+                    {
+                        Items.UseItem(2041);
+                    }
+                    else if (Items.HasItem(2010) && Items.CanUseItem(2010))
+                    {
+                        Items.UseItem(2010);
+                    }
+                    else if (Items.HasItem(2004) && Items.CanUseItem(2004))
+                    {
+                        Items.UseItem(2004);
+                    }
+                }
+            }
+        }
         private static void Harass()
         {
             var target = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Magical);

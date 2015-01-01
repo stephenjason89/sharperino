@@ -24,6 +24,12 @@ namespace D_Graves
         private static Int32 _lastSkin;
 
         private static Items.Item _youmuu, _blade, _bilge;
+
+        private static readonly int[] SmitePurple = { 3713, 3726, 3725, 3726, 3723 };
+        private static readonly int[] SmiteGrey = { 3711, 3722, 3721, 3720, 3719 };
+        private static readonly int[] SmiteRed = { 3715, 3718, 3717, 3716, 3714 };
+        private static readonly int[] SmiteBlue = { 3706, 3710, 3709, 3708, 3707 };
+
         static void Main(string[] args)
         {
             CustomEvents.Game.OnGameLoad += Game_OnGameLoad;
@@ -64,25 +70,47 @@ namespace D_Graves
             _config.SubMenu("Combo").AddItem(new MenuItem("UseWC", "Use W")).SetValue(true);
             _config.SubMenu("Combo").AddItem(new MenuItem("UseEC", "Use E")).SetValue(true);
             _config.SubMenu("Combo").AddItem(new MenuItem("diveintower", "Dive In tower with E")).SetValue(true);
-            _config.SubMenu("Combo").AddItem(new MenuItem("ActiveCombo", "Combo!").SetValue(new KeyBind(32, KeyBindType.Press)));
+            _config.SubMenu("Combo")
+                .AddItem(new MenuItem("ActiveCombo", "Combo!").SetValue(new KeyBind(32, KeyBindType.Press)));
 
             //Ulti Factions
             _config.AddSubMenu(new Menu("R Factions", "R Factions"));
             _config.SubMenu("R Factions").AddSubMenu(new Menu("Use R combo", "Use R combo"));
-            _config.SubMenu("R Factions").SubMenu("Use R combo").AddItem(new MenuItem("UseRcombo", "Use R in Combo")).SetValue(true); 
-            _config.SubMenu("R Factions").SubMenu("Use R combo").AddItem(new MenuItem("UseRrush", "Rush R if ComboDmg>=Tagret HP")).SetValue(true);
-            _config.SubMenu("R Factions").SubMenu("Use R combo").AddItem(new MenuItem("UseRC", "Use R if R.Dmg>Targ. HP")).SetValue(true);
-            _config.SubMenu("R Factions").SubMenu("Use R combo").AddItem(new MenuItem("UseRE", "Auto R if Hit X Enemys")).SetValue(true);
-            _config.SubMenu("R Factions").SubMenu("Use R combo").AddItem(new MenuItem("MinTargets", "Auto R if Hit X Enemys").SetValue(new Slider(2, 1, 5)));
+            _config.SubMenu("R Factions")
+                .SubMenu("Use R combo")
+                .AddItem(new MenuItem("UseRcombo", "Use R in Combo"))
+                .SetValue(true);
+            _config.SubMenu("R Factions")
+                .SubMenu("Use R combo")
+                .AddItem(new MenuItem("UseRrush", "Rush R if ComboDmg>=Tagret HP"))
+                .SetValue(true);
+            _config.SubMenu("R Factions")
+                .SubMenu("Use R combo")
+                .AddItem(new MenuItem("UseRC", "Use R if R.Dmg>Targ. HP"))
+                .SetValue(true);
+            _config.SubMenu("R Factions")
+                .SubMenu("Use R combo")
+                .AddItem(new MenuItem("UseRE", "Auto R if Hit X Enemys"))
+                .SetValue(true);
+            _config.SubMenu("R Factions")
+                .SubMenu("Use R combo")
+                .AddItem(new MenuItem("MinTargets", "Auto R if Hit X Enemys").SetValue(new Slider(2, 1, 5)));
             _config.SubMenu("R Factions").SubMenu("Use R combo").AddItem(new MenuItem("", "Use R in Targets Below"));
             foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != _player.Team))
-            _config.SubMenu("R Factions").SubMenu("Use R combo").AddItem(new MenuItem("castR" + enemy.BaseSkinName, enemy.BaseSkinName).SetValue(false));
+                _config.SubMenu("R Factions")
+                    .SubMenu("Use R combo")
+                    .AddItem(new MenuItem("castR" + enemy.BaseSkinName, enemy.BaseSkinName).SetValue(false));
             _config.SubMenu("R Factions").AddSubMenu(new Menu("Use R killsteal", "Use R killsteal"));
-            _config.SubMenu("R Factions").SubMenu("Use R killsteal").AddItem(new MenuItem("UseRM", "Use R KillSteal")).SetValue(true);
+            _config.SubMenu("R Factions")
+                .SubMenu("Use R killsteal")
+                .AddItem(new MenuItem("UseRM", "Use R KillSteal"))
+                .SetValue(true);
             _config.SubMenu("R Factions").SubMenu("Use R killsteal").AddItem(new MenuItem("", "Use R in Targets Below"));
             foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != _player.Team))
-            _config.SubMenu("R Factions").SubMenu("Use R killsteal").AddItem(new MenuItem("castRkill" + enemy.BaseSkinName, enemy.BaseSkinName).SetValue(false));
-           
+                _config.SubMenu("R Factions")
+                    .SubMenu("Use R killsteal")
+                    .AddItem(new MenuItem("castRkill" + enemy.BaseSkinName, enemy.BaseSkinName).SetValue(false));
+
 
             //Harass
             _config.AddSubMenu(new Menu("Harass", "Harass"));
@@ -117,14 +145,37 @@ namespace D_Graves
                         KeyBindType.Press)));
 
             _config.AddSubMenu(new Menu("items", "items"));
-            _config.SubMenu("items").AddItem(new MenuItem("Youmuu", "Use Youmuu's")).SetValue(true);
-            _config.SubMenu("items").AddItem(new MenuItem("Bilge", "Use Bilge")).SetValue(true);
-            _config.SubMenu("items").AddItem(new MenuItem("BilgeEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
-            _config.SubMenu("items").AddItem(new MenuItem("Bilgemyhp", "Or your Hp < ").SetValue(new Slider(85, 1, 100)));
-            _config.SubMenu("items").AddItem(new MenuItem("Blade", "Use Blade")).SetValue(true);
-            _config.SubMenu("items").AddItem(new MenuItem("BladeEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
-            _config.SubMenu("items").AddItem(new MenuItem("Blademyhp", "Or Your  Hp <").SetValue(new Slider(85, 1, 100)));
-           
+            _config.SubMenu("items").AddSubMenu(new Menu("Offensive", "Offensive"));
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Youmuu", "Use Youmuu's")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Bilge", "Use Bilge")).SetValue(true);
+            _config.SubMenu("items")
+                .SubMenu("Offensive")
+                .AddItem(new MenuItem("BilgeEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items")
+                .SubMenu("Offensive")
+                .AddItem(new MenuItem("Bilgemyhp", "Or your Hp < ").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Blade", "Use Blade")).SetValue(true);
+            _config.SubMenu("items")
+                .SubMenu("Offensive")
+                .AddItem(new MenuItem("BladeEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items")
+                .SubMenu("Offensive")
+                .AddItem(new MenuItem("Blademyhp", "Or Your  Hp <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items").AddSubMenu(new Menu("Potions", "Potions"));
+            _config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usehppotions", "Use Healt potion/Flask/Biscuit"))
+                .SetValue(true);
+            _config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usepotionhp", "If Health % <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usemppotions", "Use Mana potion/Flask/Biscuit"))
+                .SetValue(true);
+            _config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usepotionmp", "If Mana % <").SetValue(new Slider(85, 1, 100)));
 
             //Misc
             _config.AddSubMenu(new Menu("Misc", "Misc"));
@@ -204,8 +255,8 @@ namespace D_Graves
                 GenModelPacket(_player.ChampionName, _config.Item("skinGraves").GetValue<Slider>().Value);
                 _lastSkin = _config.Item("skinGraves").GetValue<Slider>().Value;
             }
-           Game.PrintChat("<font color='#FF0000'>If You like my work and want to support, and keep it always up to date plz donate via paypal in </font> <font color='#FF9900'>ssssssssssmith@hotmail.com</font> (10) S");
-        
+            Game.PrintChat(
+                "<font color='#FF0000'>If You like my work and want to support, and keep it always up to date plz donate via paypal in </font> <font color='#FF9900'>ssssssssssmith@hotmail.com</font> (10) S");
         }
 
         private static void Game_OnGameUpdate(EventArgs args)
@@ -240,6 +291,7 @@ namespace D_Graves
             _orbwalker.SetAttack(true);
 
             KillSteal();
+            Usepotion();
         }
 
         private static void AntiGapcloser_OnEnemyGapcloser(ActiveGapcloser gapcloser)
@@ -504,6 +556,65 @@ namespace D_Graves
             if (_player.Distance(target) <= 450 && iYoumuu && _youmuu.IsReady())
             {
                 _youmuu.Cast();
+            }
+        }
+        private static void Usepotion()
+        {
+            var mobs = MinionManager.GetMinions(_player.ServerPosition, _q.Range,
+                MinionTypes.All,
+                MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
+            var iusehppotion = _config.Item("usehppotions").GetValue<bool>();
+            var iusepotionhp = _player.Health <=
+                               (_player.MaxHealth * (_config.Item("usepotionhp").GetValue<Slider>().Value) / 100);
+            var iusemppotion = _config.Item("usemppotions").GetValue<bool>();
+            var iusepotionmp = _player.Mana <=
+                               (_player.MaxMana * (_config.Item("usepotionmp").GetValue<Slider>().Value) / 100);
+            if (Utility.InFountain() || ObjectManager.Player.HasBuff("Recall")) return;
+
+            if (Utility.CountEnemysInRange(800) > 0 ||
+                (mobs.Count > 0 && _config.Item("ActiveLane").GetValue<KeyBind>().Active && (Items.HasItem(1039) ||
+                 SmiteBlue.Any(i => Items.HasItem(i)) || SmiteRed.Any(i => Items.HasItem(i)) || SmitePurple.Any(i => Items.HasItem(i)) ||
+                  SmiteBlue.Any(i => Items.HasItem(i)) || SmiteGrey.Any(i => Items.HasItem(i))
+                     )))
+            {
+                if (iusepotionhp && iusehppotion &&
+                     !(ObjectManager.Player.HasBuff("RegenerationPotion", true) ||
+                       ObjectManager.Player.HasBuff("ItemCrystalFlask", true) ||
+                       ObjectManager.Player.HasBuff("ItemMiniRegenPotion", true)))
+                {
+                    if (Items.HasItem(2041) && Items.CanUseItem(2041))
+                    {
+                        Items.UseItem(2041);
+                    }
+                    else if (Items.HasItem(2010) && Items.CanUseItem(2010))
+                    {
+                        Items.UseItem(2010);
+                    }
+                    else if (Items.HasItem(2003) && Items.CanUseItem(2003))
+                    {
+                        Items.UseItem(2003);
+                    }
+                }
+
+
+                if (iusepotionmp && iusemppotion &&
+                    !(ObjectManager.Player.HasBuff("FlaskOfCrystalWater", true) ||
+                      ObjectManager.Player.HasBuff("ItemCrystalFlask", true) ||
+                      ObjectManager.Player.HasBuff("ItemMiniRegenPotion", true)))
+                {
+                    if (Items.HasItem(2041) && Items.CanUseItem(2041))
+                    {
+                        Items.UseItem(2041);
+                    }
+                    else if (Items.HasItem(2010) && Items.CanUseItem(2010))
+                    {
+                        Items.UseItem(2010);
+                    }
+                    else if (Items.HasItem(2004) && Items.CanUseItem(2004))
+                    {
+                        Items.UseItem(2004);
+                    }
+                }
             }
         }
         private static HitChance Qchange()

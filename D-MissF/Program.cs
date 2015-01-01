@@ -22,6 +22,11 @@ namespace D_MissF
 
         private static Int32 _lastSkin = 0;
 
+        private static readonly int[] SmitePurple = { 3713, 3726, 3725, 3726, 3723 };
+        private static readonly int[] SmiteGrey = { 3711, 3722, 3721, 3720, 3719 };
+        private static readonly int[] SmiteRed = { 3715, 3718, 3717, 3716, 3714 };
+        private static readonly int[] SmiteBlue = { 3706, 3710, 3709, 3708, 3707 };
+
         private static Items.Item _youmuu, _blade, _bilge;
 
         private static SpellSlot _igniteSlot;
@@ -109,14 +114,39 @@ namespace D_MissF
             _config.SubMenu("Farm").SubMenu("Jungle").AddItem(new MenuItem("junglemana", "Minimum Mana% >").SetValue(new Slider(35, 1, 100)));
             _config.SubMenu("Farm").SubMenu("Jungle").AddItem(new MenuItem("ActiveJungle", "Jungle!").SetValue(new KeyBind("V".ToCharArray()[0], KeyBindType.Press)));
 
+            //items
             _config.AddSubMenu(new Menu("items", "items"));
-            _config.SubMenu("items").AddItem(new MenuItem("Youmuu", "Use Youmuu's")).SetValue(true);
-            _config.SubMenu("items").AddItem(new MenuItem("Bilge", "Use Bilge")).SetValue(true);
-            _config.SubMenu("items").AddItem(new MenuItem("BilgeEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
-            _config.SubMenu("items").AddItem(new MenuItem("Bilgemyhp", "Or your Hp < ").SetValue(new Slider(85, 1, 100)));
-            _config.SubMenu("items").AddItem(new MenuItem("Blade", "Use Blade")).SetValue(true);
-            _config.SubMenu("items").AddItem(new MenuItem("BladeEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
-            _config.SubMenu("items").AddItem(new MenuItem("Blademyhp", "Or Your  Hp <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items").AddSubMenu(new Menu("Offensive", "Offensive"));
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Youmuu", "Use Youmuu's")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Bilge", "Use Bilge")).SetValue(true);
+            _config.SubMenu("items")
+                .SubMenu("Offensive")
+                .AddItem(new MenuItem("BilgeEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items")
+                .SubMenu("Offensive")
+                .AddItem(new MenuItem("Bilgemyhp", "Or your Hp < ").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Blade", "Use Blade")).SetValue(true);
+            _config.SubMenu("items")
+                .SubMenu("Offensive")
+                .AddItem(new MenuItem("BladeEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items")
+                .SubMenu("Offensive")
+                .AddItem(new MenuItem("Blademyhp", "Or Your  Hp <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items").AddSubMenu(new Menu("Potions", "Potions"));
+            _config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usehppotions", "Use Healt potion/Flask/Biscuit"))
+                .SetValue(true);
+            _config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usepotionhp", "If Health % <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usemppotions", "Use Mana potion/Flask/Biscuit"))
+                .SetValue(true);
+            _config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usepotionmp", "If Mana % <").SetValue(new Slider(85, 1, 100)));
 
             //Misc
             _config.AddSubMenu(new Menu("Misc", "Misc"));
@@ -197,6 +227,8 @@ namespace D_MissF
             _player = ObjectManager.Player;
 
             KillSteal();
+
+            Usepotion();
         }
         private static void UseItemes(Obj_AI_Hero target)
         {
@@ -226,6 +258,65 @@ namespace D_MissF
             if (_player.Distance(target) <= 450 && iYoumuu && _youmuu.IsReady())
             {
                 _youmuu.Cast();
+            }
+        }
+        private static void Usepotion()
+        {
+            var mobs = MinionManager.GetMinions(_player.ServerPosition, _q.Range,
+                MinionTypes.All,
+                MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
+            var iusehppotion = _config.Item("usehppotions").GetValue<bool>();
+            var iusepotionhp = _player.Health <=
+                               (_player.MaxHealth * (_config.Item("usepotionhp").GetValue<Slider>().Value) / 100);
+            var iusemppotion = _config.Item("usemppotions").GetValue<bool>();
+            var iusepotionmp = _player.Mana <=
+                               (_player.MaxMana * (_config.Item("usepotionmp").GetValue<Slider>().Value) / 100);
+            if (Utility.InFountain() || ObjectManager.Player.HasBuff("Recall")) return;
+
+            if (Utility.CountEnemysInRange(800) > 0 ||
+                (mobs.Count > 0 && _config.Item("ActiveJungle").GetValue<KeyBind>().Active && (Items.HasItem(1039) ||
+                 SmiteBlue.Any(i => Items.HasItem(i)) || SmiteRed.Any(i => Items.HasItem(i)) || SmitePurple.Any(i => Items.HasItem(i)) ||
+                  SmiteBlue.Any(i => Items.HasItem(i)) || SmiteGrey.Any(i => Items.HasItem(i))
+                     )))
+            {
+                if (iusepotionhp && iusehppotion &&
+                     !(ObjectManager.Player.HasBuff("RegenerationPotion", true) ||
+                       ObjectManager.Player.HasBuff("ItemCrystalFlask", true) ||
+                       ObjectManager.Player.HasBuff("ItemMiniRegenPotion", true)))
+                {
+                    if (Items.HasItem(2041) && Items.CanUseItem(2041))
+                    {
+                        Items.UseItem(2041);
+                    }
+                    else if (Items.HasItem(2010) && Items.CanUseItem(2010))
+                    {
+                        Items.UseItem(2010);
+                    }
+                    else if (Items.HasItem(2003) && Items.CanUseItem(2003))
+                    {
+                        Items.UseItem(2003);
+                    }
+                }
+
+
+                if (iusepotionmp && iusemppotion &&
+                    !(ObjectManager.Player.HasBuff("FlaskOfCrystalWater", true) ||
+                      ObjectManager.Player.HasBuff("ItemCrystalFlask", true) ||
+                      ObjectManager.Player.HasBuff("ItemMiniRegenPotion", true)))
+                {
+                    if (Items.HasItem(2041) && Items.CanUseItem(2041))
+                    {
+                        Items.UseItem(2041);
+                    }
+                    else if (Items.HasItem(2010) && Items.CanUseItem(2010))
+                    {
+                        Items.UseItem(2010);
+                    }
+                    else if (Items.HasItem(2004) && Items.CanUseItem(2004))
+                    {
+                        Items.UseItem(2004);
+                    }
+                }
             }
         }
         private static void AntiGapcloser_OnEnemyGapcloser(ActiveGapcloser gapcloser)

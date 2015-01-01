@@ -19,6 +19,13 @@ namespace D_Corki
         private static Obj_AI_Hero _player;
 
         private static Int32 _lastSkin;
+
+        private static Items.Item _youmuu, _blade, _bilge;
+
+        private static readonly int[] SmitePurple = { 3713, 3726, 3725, 3726, 3723 };
+        private static readonly int[] SmiteGrey = { 3711, 3722, 3721, 3720, 3719 };
+        private static readonly int[] SmiteRed = { 3715, 3718, 3717, 3716, 3714 };
+        private static readonly int[] SmiteBlue = { 3706, 3710, 3709, 3708, 3707 };
         static void Main(string[] args)
         {
             CustomEvents.Game.OnGameLoad += Game_OnGameLoad;
@@ -65,6 +72,39 @@ namespace D_Corki
             _config.SubMenu("Combo").AddItem(new MenuItem("UseRC", "Use R")).SetValue(true);
             _config.SubMenu("Combo")
                 .AddItem(new MenuItem("ActiveCombo", "Combo!").SetValue(new KeyBind(32, KeyBindType.Press)));
+
+            _config.AddSubMenu(new Menu("items", "items"));
+            _config.SubMenu("items").AddSubMenu(new Menu("Offensive", "Offensive"));
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Youmuu", "Use Youmuu's")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Bilge", "Use Bilge")).SetValue(true);
+            _config.SubMenu("items")
+                .SubMenu("Offensive")
+                .AddItem(new MenuItem("BilgeEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items")
+                .SubMenu("Offensive")
+                .AddItem(new MenuItem("Bilgemyhp", "Or your Hp < ").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Blade", "Use Blade")).SetValue(true);
+            _config.SubMenu("items")
+                .SubMenu("Offensive")
+                .AddItem(new MenuItem("BladeEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items")
+                .SubMenu("Offensive")
+                .AddItem(new MenuItem("Blademyhp", "Or Your  Hp <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items").AddSubMenu(new Menu("Potions", "Potions"));
+            _config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usehppotions", "Use Healt potion/Flask/Biscuit"))
+                .SetValue(true);
+            _config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usepotionhp", "If Health % <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usemppotions", "Use Mana potion/Flask/Biscuit"))
+                .SetValue(true);
+            _config.SubMenu("items")
+                .SubMenu("Potions")
+                .AddItem(new MenuItem("usepotionmp", "If Mana % <").SetValue(new Slider(85, 1, 100)));
 
             //Harass
             _config.AddSubMenu(new Menu("Harass", "Harass"));
@@ -198,6 +238,7 @@ namespace D_Corki
             _orbwalker.SetAttack(true);
 
             KillSteal();
+            Usepotion();
         }
 
         private static int UltiStucks()
@@ -241,6 +282,7 @@ namespace D_Corki
                 if (t != null && _player.Distance(t) < _r.Range && _r.GetPrediction(t).Hitchance >= Rchangecombo())
                     _r.Cast(t, Packets(), true);
             }
+            UseItemes(target);
         }
 
         private static void Fuckingw(Obj_AI_Hero target)
@@ -463,7 +505,95 @@ namespace D_Corki
                         _r.Cast(t, Packets(), true);
             }
         }
+        private static void UseItemes(Obj_AI_Hero target)
+        {
+            var iBilge = _config.Item("Bilge").GetValue<bool>();
+            var iBilgeEnemyhp = target.Health <=
+                                (target.MaxHealth * (_config.Item("BilgeEnemyhp").GetValue<Slider>().Value) / 100);
+            var iBilgemyhp = _player.Health <=
+                             (_player.MaxHealth * (_config.Item("Bilgemyhp").GetValue<Slider>().Value) / 100);
+            var iBlade = _config.Item("Blade").GetValue<bool>();
+            var iBladeEnemyhp = target.Health <=
+                                (target.MaxHealth * (_config.Item("BladeEnemyhp").GetValue<Slider>().Value) / 100);
+            var iBlademyhp = _player.Health <=
+                             (_player.MaxHealth * (_config.Item("Blademyhp").GetValue<Slider>().Value) / 100);
+            var iZhonyas = _config.Item("Zhonyas").GetValue<bool>();
+            var iYoumuu = _config.Item("Youmuu").GetValue<bool>();
 
+            if (_player.Distance(target) <= 450 && iBilge && (iBilgeEnemyhp || iBilgemyhp) && _bilge.IsReady())
+            {
+                _bilge.Cast(target);
+
+            }
+            if (_player.Distance(target) <= 450 && iBlade && (iBladeEnemyhp || iBlademyhp) && _blade.IsReady())
+            {
+                _blade.Cast(target);
+
+            }
+            if (_player.Distance(target) <= 450 && iYoumuu && _youmuu.IsReady())
+            {
+                _youmuu.Cast();
+            }
+        }
+        private static void Usepotion()
+        {
+            var mobs = MinionManager.GetMinions(_player.ServerPosition, _q.Range,
+                MinionTypes.All,
+                MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
+            var iusehppotion = _config.Item("usehppotions").GetValue<bool>();
+            var iusepotionhp = _player.Health <=
+                               (_player.MaxHealth * (_config.Item("usepotionhp").GetValue<Slider>().Value) / 100);
+            var iusemppotion = _config.Item("usemppotions").GetValue<bool>();
+            var iusepotionmp = _player.Mana <=
+                               (_player.MaxMana * (_config.Item("usepotionmp").GetValue<Slider>().Value) / 100);
+            if (Utility.InFountain() || ObjectManager.Player.HasBuff("Recall")) return;
+
+            if (Utility.CountEnemysInRange(800) > 0 ||
+                (mobs.Count > 0 && _config.Item("ActiveLane").GetValue<KeyBind>().Active && (Items.HasItem(1039) ||
+                 SmiteBlue.Any(i => Items.HasItem(i)) || SmiteRed.Any(i => Items.HasItem(i)) || SmitePurple.Any(i => Items.HasItem(i)) ||
+                  SmiteBlue.Any(i => Items.HasItem(i)) || SmiteGrey.Any(i => Items.HasItem(i))
+                     )))
+            {
+                if (iusepotionhp && iusehppotion &&
+                     !(ObjectManager.Player.HasBuff("RegenerationPotion", true) ||
+                       ObjectManager.Player.HasBuff("ItemCrystalFlask", true) ||
+                       ObjectManager.Player.HasBuff("ItemMiniRegenPotion", true)))
+                {
+                    if (Items.HasItem(2041) && Items.CanUseItem(2041))
+                    {
+                        Items.UseItem(2041);
+                    }
+                    else if (Items.HasItem(2010) && Items.CanUseItem(2010))
+                    {
+                        Items.UseItem(2010);
+                    }
+                    else if (Items.HasItem(2003) && Items.CanUseItem(2003))
+                    {
+                        Items.UseItem(2003);
+                    }
+                }
+
+
+                if (iusepotionmp && iusemppotion &&
+                    !(ObjectManager.Player.HasBuff("FlaskOfCrystalWater", true) ||
+                      ObjectManager.Player.HasBuff("ItemCrystalFlask", true) ||
+                      ObjectManager.Player.HasBuff("ItemMiniRegenPotion", true)))
+                {
+                    if (Items.HasItem(2041) && Items.CanUseItem(2041))
+                    {
+                        Items.UseItem(2041);
+                    }
+                    else if (Items.HasItem(2010) && Items.CanUseItem(2010))
+                    {
+                        Items.UseItem(2010);
+                    }
+                    else if (Items.HasItem(2004) && Items.CanUseItem(2004))
+                    {
+                        Items.UseItem(2004);
+                    }
+                }
+            }
+        }
         private static HitChance Qchangecombo()
         {
             switch (_config.Item("Qchange").GetValue<StringList>().SelectedIndex)

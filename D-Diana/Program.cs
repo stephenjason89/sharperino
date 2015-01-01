@@ -368,7 +368,7 @@ namespace D_Diana
         {
             if (sender.IsMe)
             {
-                Game.PrintChat("Spell name: " + args.SData.Name.ToString());
+               // Game.PrintChat("Spell name: " + args.SData.Name.ToString());
             }
         }
         private static void Smiteontarget(Obj_AI_Hero target)

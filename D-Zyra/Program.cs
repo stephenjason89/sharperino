@@ -150,7 +150,7 @@ namespace D_Zyra
 
             _config.AddToMainMenu();
 
-            Game.PrintChat("<font color='#881df2'>D-Zyra by Diabaths</font> Loaded.");
+            Game.PrintChat("<font color='#881df2'>D-Zyra by Diabaths (WIP)</font> Loaded.");
             Game.PrintChat(
                "<font color='#FF0000'>If You like my work and want to support, and keep it always up to date plz donate via paypal in </font> <font color='#FF9900'>ssssssssssmith@hotmail.com</font> (10) S");
             Drawing.OnDraw += Drawing_OnDraw;
@@ -231,10 +231,18 @@ namespace D_Zyra
             }
             if (_r.IsReady())
                 dmg += _player.GetSpellDamage(hero, SpellSlot.R);
-            if (Items.HasItem(3128))
+            if (Items.HasItem(3153) && Items.CanUseItem(3153))
+                dmg += _player.GetItemDamage(hero, Damage.DamageItems.Botrk);
+            if (Items.HasItem(3146) && Items.CanUseItem(3146))
+                dmg += _player.GetItemDamage(hero, Damage.DamageItems.Hexgun);
+            if (Items.HasItem(3128) && Items.CanUseItem(3146))
             {
                 dmg += _player.GetItemDamage(hero, Damage.DamageItems.Dfg);
-                dmg = dmg*1.2;
+                dmg = dmg * 1.2;
+            }
+            if (ObjectManager.Player.HasBuff("LichBane"))
+            {
+                dmg += _player.BaseAttackDamage * 0.75 + _player.FlatMagicDamageMod * 0.5;
             }
             if (ObjectManager.Player.GetSpellSlot("SummonerIgnite") != SpellSlot.Unknown)
             {

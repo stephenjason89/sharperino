@@ -53,7 +53,7 @@ namespace D_Ezreal
             Utility.DelayAction.Add(150, SimplePing);
             Utility.DelayAction.Add(300, SimplePing);
             Utility.DelayAction.Add(400, SimplePing);
-        }
+          }
 
         private static void SimplePing()
         {
@@ -751,24 +751,25 @@ namespace D_Ezreal
                     continue;
                 var minionInRangeAa = Orbwalking.InAutoAttackRange(minion);
                 var minionInRangeSpell = minion.Distance(ObjectManager.Player) <= spell.Range;
-                var minionKillableAa = _player.GetAutoAttackDamage(minion, true) >= minion.Health;
-                var minionKillableSpell = _player.GetSpellDamage(minion, SpellSlot.Q) >= minion.Health;
+                var minionKillableAa = _player.GetAutoAttackDamage(minion, true) - 30 >= minion.Health;
+                var minionKillableSpell = _player.GetSpellDamage(minion, SpellSlot.Q) - 30 >= minion.Health;
                 var lastHit = _orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LastHit;
                 var laneClear = _orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LaneClear;
                 if ((lastHit && minionInRangeSpell && minionKillableSpell) &&
-                    ((minionInRangeAa && !minionKillableAa) || !minionInRangeAa))
-                    if (skillshot)
+                    _q.GetPrediction(minion).CollisionObjects.Count > 0 && skillshot)
+                {
+                    spell.Cast(minion.Position);
+                }
+                if (laneClear && minionInRangeSpell)
+                {
+                    if (minionKillableSpell && _q.GetPrediction(minion).CollisionObjects.Count > 0 && skillshot)
                         spell.Cast(minion.Position);
                     else
                         spell.Cast(minion);
-                else if ((laneClear && minionInRangeSpell && !minionKillableSpell) &&
-                         ((minionInRangeAa && !minionKillableAa) || !minionInRangeAa))
-                    if (skillshot)
-                        spell.Cast(minion.Position);
-                    else
-                        spell.Cast(minion);
+                }
             }
         }
+
 
         private static void Drawing_OnDraw(EventArgs args)
         {

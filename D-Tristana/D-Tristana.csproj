@@ -76,12 +76,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\D-Zac\D-Zac.csproj">
-      <Project>{51AC72EB-C750-4083-B8ED-87D54145F14B}</Project>
-      <Name>D-Zac</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">
       <Visible>False</Visible>
       <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>

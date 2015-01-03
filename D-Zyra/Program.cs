@@ -142,6 +142,7 @@ namespace D_Zyra
             _config.SubMenu("Drawing").AddItem(new MenuItem("DrawE", "Draw E").SetValue(true));
             _config.SubMenu("Drawing").AddItem(new MenuItem("DrawR", "Draw R").SetValue(true));
             _config.SubMenu("Drawing").AddItem(dmgAfterComboItem);
+            _config.SubMenu("Drawings").AddItem(new MenuItem("damagetest", "Damage Text")).SetValue(true);
             _config.SubMenu("Drawing").AddItem(new MenuItem("CircleLag", "Lag Free Circles").SetValue(true));
             _config.SubMenu("Drawing")
                 .AddItem(new MenuItem("CircleQuality", "Circles Quality").SetValue(new Slider(100, 100, 10)));
@@ -557,7 +558,31 @@ namespace D_Zyra
 
         private static void Drawing_OnDraw(EventArgs args)
         {
-
+            if (_config.Item("damagetest").GetValue<bool>())
+            {
+                foreach (
+                var enemyVisible in
+                ObjectManager.Get<Obj_AI_Hero>().Where(enemyVisible => enemyVisible.IsValidTarget()))
+                {
+                    if (ComboDamage(enemyVisible) > enemyVisible.Health)
+                    {
+                        Drawing.DrawText(Drawing.WorldToScreen(enemyVisible.Position)[0] + 50,
+                        Drawing.WorldToScreen(enemyVisible.Position)[1] - 40, Color.Red,
+                        "Combo=Rekt");
+                    }
+                    else if (ComboDamage(enemyVisible) + _player.GetAutoAttackDamage(enemyVisible, true) * 2 >
+                    enemyVisible.Health)
+                    {
+                        Drawing.DrawText(Drawing.WorldToScreen(enemyVisible.Position)[0] + 50,
+                        Drawing.WorldToScreen(enemyVisible.Position)[1] - 40, Color.Orange,
+                        "Combo+AA=Rekt");
+                    }
+                    else
+                        Drawing.DrawText(Drawing.WorldToScreen(enemyVisible.Position)[0] + 50,
+                        Drawing.WorldToScreen(enemyVisible.Position)[1] - 40, Color.Green,
+                        "Unkillable");
+                }
+            }
             if (_config.Item("CircleLag").GetValue<bool>())
             {
 

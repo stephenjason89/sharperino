@@ -308,7 +308,7 @@ namespace D_Tristana
                 dmg += _player.GetItemDamage(hero, Damage.DamageItems.Botrk);
             if (Items.HasItem(3146) && Items.CanUseItem(3146))
                 dmg += _player.GetItemDamage(hero, Damage.DamageItems.Hexgun);
-            if (Items.HasItem(3128) && Items.CanUseItem(3146))
+            if (Items.HasItem(3128) && Items.CanUseItem(3128))
             {
                 dmg += _player.GetItemDamage(hero, Damage.DamageItems.Dfg);
                 dmg = dmg*1.2;

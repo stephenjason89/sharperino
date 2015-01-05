@@ -248,7 +248,7 @@ namespace D_Ezreal
             _config.SubMenu("Misc").AddItem(new MenuItem("useQimmo", "Auto Q Immobile")).SetValue(true);
             _config.SubMenu("Misc").AddItem(new MenuItem("useQstun", "Auto Q Taunt/Fear/Charm/Snare")).SetValue(true);
             _config.SubMenu("Misc").AddItem(new MenuItem("EZAutoLevel", "Auto Level")).SetValue(false);
-            _config.SubMenu("Misc").AddItem(new MenuItem("EZStyle", "lvl_style").SetValue(
+            _config.SubMenu("Misc").AddItem(new MenuItem("EZStyle", "Level Sequence").SetValue(
                new StringList(new[] { "W-E-Q", "W-Q-E", "Q-E-W", "Q-W-E" })));
             _config.SubMenu("Misc").AddItem(new MenuItem("skinez", "Use Custom Skin").SetValue(false));
             _config.SubMenu("Misc").AddItem(new MenuItem("skinezreal", "Skin Changer").SetValue(new Slider(4, 1, 8)));

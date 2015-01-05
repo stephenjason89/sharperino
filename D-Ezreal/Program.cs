@@ -27,11 +27,11 @@ namespace D_Ezreal
 
         private static int _lastPingT = 0;
 
-        //AP Style
-        private static readonly List<int> Ezrealap = new List<int> {1,2,1,0,1,3,1,2,1,2,3,2,2,0,0,3,0,0};
-
-        //AD Style
-        private static readonly List<int> Ezrealad = new List<int> {0,2,0,1,0,3,0,2,0,2,3,2,1,2,1,3,1,1};
+       
+        private static readonly int[] Ezrealap = { 2, 3, 2, 1, 2, 4, 2, 3, 2, 3, 4, 3, 3, 1, 1, 4, 1, 1 };
+        private static readonly int[] Ezrealad = { 1, 3, 1, 2, 1, 4, 1, 3, 1, 3, 4, 3, 2, 3, 2, 4, 2, 2 };
+        private static readonly int[] EzrealQWE = { 1, 3, 2, 1, 1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3 };
+        private static readonly int[] EzrealWQE = { 1, 3, 2, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3 };
 
         private static readonly int[] SmitePurple = { 3713, 3726, 3725, 3726, 3723 };
         private static readonly int[] SmiteGrey = { 3711, 3722, 3721, 3720, 3719 };
@@ -240,7 +240,7 @@ namespace D_Ezreal
 
             //Misc
             _config.AddSubMenu(new Menu("Misc", "Misc"));
-            //_config.SubMenu("Misc").AddItem(new MenuItem("pingulti", "Ping If R Dmg>Enemy Health (only local)").SetValue(false));
+            _config.SubMenu("Misc").AddItem(new MenuItem("pingulti", "Ping If R Dmg>Enemy Health (only local)").SetValue(false));
             _config.SubMenu("Misc").AddItem(new MenuItem("useQK", "Use Q KillSteal")).SetValue(true);
             _config.SubMenu("Misc").AddItem(new MenuItem("useWK", "Use W KillSteal")).SetValue(true);
             _config.SubMenu("Misc").AddItem(new MenuItem("useEK", "Use (E-Q) or (E-W) KillSteal")).SetValue(true);
@@ -248,9 +248,8 @@ namespace D_Ezreal
             _config.SubMenu("Misc").AddItem(new MenuItem("useQimmo", "Auto Q Immobile")).SetValue(true);
             _config.SubMenu("Misc").AddItem(new MenuItem("useQstun", "Auto Q Taunt/Fear/Charm/Snare")).SetValue(true);
             _config.SubMenu("Misc").AddItem(new MenuItem("EZAutoLevel", "Auto Level")).SetValue(false);
-            _config.SubMenu("Misc")
-                .AddItem(new MenuItem("EZStyle", ""))
-                .SetValue(new StringList(new string[2] {"AP Style(start with W)", "AD Style(start with Q)"}));
+            _config.SubMenu("Misc").AddItem(new MenuItem("EZStyle", "lvl_style").SetValue(
+               new StringList(new[] { "W-E-Q", "W-Q-E", "Q-E-W", "Q-W-E" })));
             _config.SubMenu("Misc").AddItem(new MenuItem("skinez", "Use Custom Skin").SetValue(false));
             _config.SubMenu("Misc").AddItem(new MenuItem("skinezreal", "Skin Changer").SetValue(new Slider(4, 1, 8)));
 
@@ -289,13 +288,24 @@ namespace D_Ezreal
             }
             Game.OnGameUpdate += Game_OnGameUpdate;
             Drawing.OnDraw += Drawing_OnDraw;
-            CustomEvents.Unit.OnLevelUp += OnLevelUp;
+            //CustomEvents.Unit.OnLevelUp += OnLevelUp;
             Orbwalking.AfterAttack += Orbwalking_AfterAttack;
+            _config.Item("EZAutoLevel").ValueChanged += LevelUpMode;
+            if (_config.Item("EZAutoLevel").GetValue<bool>())
+            {
+                var level = new AutoLevel(Style());
+            }
+
         }
 
+        private static void LevelUpMode(object sender, OnValueChangeEventArgs e)
+        {
+            AutoLevel.Enabled(e.GetNewValue<bool>());
+        }
+        
         private static void Game_OnGameUpdate(EventArgs args)
         {
-           /* if (_config.Item("pingulti").GetValue<bool>())
+           if (_config.Item("pingulti").GetValue<bool>())
             {
                 foreach (
                     var enemy in
@@ -306,10 +316,10 @@ namespace D_Ezreal
                                     hero.IsValidTarget(30000) &&
                                     _player.GetSpellDamage(hero, SpellSlot.R)*0.9 > hero.Health)
                     )
-                {
-                   Ping(enemy.Position.To2D());
+                {Game.PrintChat("ping");
+                 Ping(enemy.Position.To2D());
                 }
-            }*/
+            }
             if (_config.Item("skinez").GetValue<bool>() && SkinChanged())
             {
                 GenModelPacket(_player.ChampionName, _config.Item("skinezreal").GetValue<Slider>().Value);
@@ -371,6 +381,23 @@ namespace D_Ezreal
             Usepotion();
         }
 
+        private static int[] Style()
+        {
+            switch (_config.Item("EZStyle").GetValue<StringList>().SelectedIndex)
+            {
+                case 0:
+                    return Ezrealap;
+                case 1:
+                    return EzrealWQE;
+                case 2:
+                    return Ezrealad;
+                case 3:
+                    return EzrealQWE;
+                default:
+                    return null;
+            }
+        }
+        
         private static void GenModelPacket(string champ, int skinId)
         {
             Packet.S2C.UpdateModel.Encoded(new Packet.S2C.UpdateModel.Struct(_player.NetworkId, skinId, champ))
@@ -409,7 +436,7 @@ namespace D_Ezreal
             }
         }
 
-        private static void OnLevelUp(LeagueSharp.Obj_AI_Base sender,
+       /* private static void OnLevelUp(LeagueSharp.Obj_AI_Base sender,
             LeagueSharp.Common.CustomEvents.Unit.OnLevelUpEventArgs args)
         {
             if (!sender.IsValid || !sender.IsMe)
@@ -420,7 +447,7 @@ namespace D_Ezreal
                 _player.Spellbook.LevelUpSpell((SpellSlot) Ezrealap[args.NewLevel - 1]);
             else if (_config.Item("EZStyle").GetValue<StringList>().SelectedIndex == 1)
                 _player.Spellbook.LevelUpSpell((SpellSlot) Ezrealad[args.NewLevel - 1]);
-        }
+        }*/
 
         private static void Combo()
         {

@@ -151,6 +151,9 @@ namespace D_Ezreal
             //items
             _config.AddSubMenu(new Menu("items", "items"));
             _config.SubMenu("items").AddSubMenu(new Menu("Offensive", "Offensive"));
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("usemuramana", "Use Muramana")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Offensive")
+                .AddItem(new MenuItem("muramanamin", "Use Muramana until MP < %").SetValue(new Slider(25, 1, 100)));
             _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Youmuu", "Use Youmuu's")).SetValue(true);
             _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Bilge", "Use Bilge")).SetValue(true);
             _config.SubMenu("items")
@@ -288,7 +291,6 @@ namespace D_Ezreal
             }
             Game.OnGameUpdate += Game_OnGameUpdate;
             Drawing.OnDraw += Drawing_OnDraw;
-            //CustomEvents.Unit.OnLevelUp += OnLevelUp;
             Orbwalking.AfterAttack += Orbwalking_AfterAttack;
             _config.Item("EZAutoLevel").ValueChanged += LevelUpMode;
             if (_config.Item("EZAutoLevel").GetValue<bool>())
@@ -376,7 +378,7 @@ namespace D_Ezreal
             {
                 LastHit();
             }
-
+            Muramana();
             KillSteal();
             Usepotion();
         }
@@ -435,19 +437,22 @@ namespace D_Ezreal
                 }
             }
         }
-
-       /* private static void OnLevelUp(LeagueSharp.Obj_AI_Base sender,
-            LeagueSharp.Common.CustomEvents.Unit.OnLevelUpEventArgs args)
+        private static void Muramana()
         {
-            if (!sender.IsValid || !sender.IsMe)
-                return;
-
-            if (!_config.Item("EZAutoLevel").GetValue<bool>()) return;
-            if (_config.Item("EZStyle").GetValue<StringList>().SelectedIndex == 0)
-                _player.Spellbook.LevelUpSpell((SpellSlot) Ezrealap[args.NewLevel - 1]);
-            else if (_config.Item("EZStyle").GetValue<StringList>().SelectedIndex == 1)
-                _player.Spellbook.LevelUpSpell((SpellSlot) Ezrealad[args.NewLevel - 1]);
-        }*/
+            var muranama = _player.Mana >=
+                                (_player.MaxMana * (_config.Item("muramanamin").GetValue<Slider>().Value) / 100);
+            if (!_config.Item("usemuramana").GetValue<bool>())return;
+            if (muranama && _player.Buffs.Count(buf => buf.Name == "Muramana") == 0 &&
+                _config.Item("ActiveCombo").GetValue<KeyBind>().Active)
+            {
+                Items.UseItem(3042);
+            }
+            if ((!muranama || !_config.Item("ActiveCombo").GetValue<KeyBind>().Active) &&
+                _player.Buffs.Count(buf => buf.Name == "Muramana") == 1)
+            {
+                Items.UseItem(3042);
+            }
+        }
 
         private static void Combo()
         {

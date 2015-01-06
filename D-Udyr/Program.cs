@@ -253,12 +253,12 @@ namespace D_Udyr
             {
                 Forest();
             }
+            Usepotion();
             if (_config.Item("Usesmite").GetValue<KeyBind>().Active)
             {
                 Smiteuse();
             }
-            Usepotion();
-            _orbwalker.SetAttack(true);
+           _orbwalker.SetAttack(true);
 
             _orbwalker.SetMovement(true);
         }

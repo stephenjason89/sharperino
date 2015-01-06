@@ -295,6 +295,7 @@ namespace D_Shyvana
             {
                 Forest();
             }
+            Usepotion();
             if (_config.Item("Usesmite").GetValue<KeyBind>().Active)
             {
                 Smiteuse();
@@ -304,8 +305,7 @@ namespace D_Shyvana
             _orbwalker.SetAttack(true);
 
             KillSteal();
-            Usepotion();
-        }
+         }
 
         private static void GenModelPacket(string champ, int skinId)
         {

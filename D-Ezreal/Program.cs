@@ -30,8 +30,8 @@ namespace D_Ezreal
        
         private static readonly int[] Ezrealap = { 2, 3, 2, 1, 2, 4, 2, 3, 2, 3, 4, 3, 3, 1, 1, 4, 1, 1 };
         private static readonly int[] Ezrealad = { 1, 3, 1, 2, 1, 4, 1, 3, 1, 3, 4, 3, 2, 3, 2, 4, 2, 2 };
-        private static readonly int[] EzrealQWE = { 1, 3, 2, 1, 1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3 };
-        private static readonly int[] EzrealWQE = { 1, 3, 2, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3 };
+        private static readonly int[] EzrealQwe = { 1, 3, 2, 1, 1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3 };
+        private static readonly int[] EzrealWqe = { 1, 3, 2, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3 };
 
         private static readonly int[] SmitePurple = { 3713, 3726, 3725, 3726, 3723 };
         private static readonly int[] SmiteGrey = { 3711, 3722, 3721, 3720, 3719 };
@@ -388,11 +388,11 @@ namespace D_Ezreal
                 case 0:
                     return Ezrealap;
                 case 1:
-                    return EzrealWQE;
+                    return EzrealWqe;
                 case 2:
                     return Ezrealad;
                 case 3:
-                    return EzrealQWE;
+                    return EzrealQwe;
                 default:
                     return null;
             }

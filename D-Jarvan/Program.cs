@@ -892,11 +892,7 @@ namespace D_Jarvan
             var iTiamat = _config.Item("Tiamat").GetValue<bool>();
             var iHydra = _config.Item("Hydra").GetValue<bool>();
             var ilotis = _config.Item("lotis").GetValue<bool>();
-            //var ihp = _config.Item("Hppotion").GetValue<bool>();
-            // var ihpuse = _player.Health <= (_player.MaxHealth * (_config.Item("Hppotionuse").GetValue<Slider>().Value) / 100);
-            //var imp = _config.Item("Mppotion").GetValue<bool>();
-            //var impuse = _player.Health <= (_player.MaxHealth * (_config.Item("Mppotionuse").GetValue<Slider>().Value) / 100);
-
+           
             if (_player.Distance(target) <= 450 && iBilge && (iBilgeEnemyhp || iBilgemyhp) && _bilge.IsReady())
             {
                 _bilge.Cast(target);
@@ -947,7 +943,7 @@ namespace D_Jarvan
 
             if (Utility.CountEnemysInRange(800) > 0 ||
                 (mobs.Count > 0 && _config.Item("ActiveJungle").GetValue<KeyBind>().Active &&(Items.HasItem(1039) ||
-                 SmiteBlue.Any(i => Items.HasItem(i)) || SmiteRed.Any(i => Items.HasItem(i)) || SmitePurple.Any(i => Items.HasItem(i)) ||
+                  SmiteRed.Any(i => Items.HasItem(i)) || SmitePurple.Any(i => Items.HasItem(i)) ||
                   SmiteBlue.Any(i => Items.HasItem(i)) || SmiteGrey.Any(i => Items.HasItem(i))
                      )))
             {

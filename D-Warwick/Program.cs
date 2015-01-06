@@ -244,6 +244,7 @@ namespace D_Warwick
             {
                 JungleClear();
             }
+            Usepotion();
             if (_config.Item("UseCombo").GetValue<KeyBind>().Active)
             {
                 Combo();
@@ -256,8 +257,7 @@ namespace D_Warwick
             _e.Range = 700 + 800*ObjectManager.Player.Spellbook.GetSpell(SpellSlot.E).Level;
 
             KillSteal();
-            Usepotion();
-        }
+         }
 
         private static void Savemyass()
         {

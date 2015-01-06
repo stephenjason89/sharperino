@@ -254,11 +254,11 @@ namespace D_Kayle
             {
                 JungleFarm();
             }
+            Usepotion();
             if (_config.Item("Usesmite").GetValue<KeyBind>().Active)
             {
                 Smiteuse();
             }
-            Usepotion();
             AutoW();
             AutoR();
             AllyR();

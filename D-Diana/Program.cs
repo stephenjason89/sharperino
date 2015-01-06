@@ -351,6 +351,7 @@ namespace D_Diana
             {
                 JungleClear();
             }
+            Usepotion();
             if (_config.Item("Escape").GetValue<KeyBind>().Active)
             {
                 Tragic();
@@ -359,7 +360,6 @@ namespace D_Diana
             {
                 KillSteal();
             }
-            Usepotion();
             /* if (_config.Item("AutoShield").GetValue<bool>() && !_config.Item("ActiveCombo").GetValue<KeyBind>().Active)
             {
                 AutoW();

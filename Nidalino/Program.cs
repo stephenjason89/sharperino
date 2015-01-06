@@ -26,17 +26,15 @@ namespace D_Nidalee
 
         private static Items.Item _tiamat, _hydra, _blade, _bilge, _rand, _lotis, _zhonya, _dfg;
 
-        public static SpellSlot IgniteSlot;
+        private static SpellSlot IgniteSlot;
 
-        public static Menu Config;
+        private static Menu Config;
 
         private static Obj_AI_Hero Player;
 
-        public static bool IsHuman;
+        private static bool IsHuman;
 
-        public static bool IsCougar;
-
-        public static bool Recall;
+        private static bool IsCougar;
 
         private static readonly float[] HumanQcd = {6, 6, 6, 6, 6};
 

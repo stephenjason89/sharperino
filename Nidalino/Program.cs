@@ -914,7 +914,7 @@ namespace D_Nidalee
             var obj = (Obj_GeneralParticleEmitter)sender;
             if (obj != null && obj.IsMe && obj.Name == "TeleportHome")
             {
-                Recall = true;
+               
             }
         }
 
@@ -925,7 +925,7 @@ namespace D_Nidalee
             var obj = (Obj_GeneralParticleEmitter)sender;
             if (obj != null && obj.IsMe && obj.Name == "TeleportHome")
             {
-                Recall = false;
+                
             }
         }
     }

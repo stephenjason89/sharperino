@@ -21,11 +21,10 @@ namespace D_Zyra
 
         private static Int32 _lastSkin;
 
-        private static Items.Item _dfg;
-
         private static SpellSlot _igniteSlot;
+      
+        private static Items.Item _rand, _lotis, _youmuu, _blade, _bilge, _dfg, _hextech;
 
-        private static Items.Item _rand, _lotis;
         private static SpellSlot _smiteSlot = SpellSlot.Unknown;
 
         private static Spell _smite;
@@ -58,7 +57,15 @@ namespace D_Zyra
             _passive.SetSkillshot(0.5f, 70f, 1400f, false, SkillshotType.SkillshotLine);
 
             _igniteSlot = _player.GetSpellSlot("SummonerDot");
-            _dfg = new Items.Item(3128, 750f);
+
+            _dfg = Utility.Map.GetMap()._MapType == Utility.Map.MapType.TwistedTreeline ||
+                   Utility.Map.GetMap()._MapType == Utility.Map.MapType.CrystalScar
+                ? new Items.Item(3188, 750)
+                : new Items.Item(3128, 750);
+            _hextech = new Items.Item(3146, 700);
+            _youmuu = new Items.Item(3142, 10);
+            _bilge = new Items.Item(3144, 475f);
+            _blade = new Items.Item(3153, 475f);
             _rand = new Items.Item(3143, 490f);
             _lotis = new Items.Item(3190, 590f);
             SetSmiteSlot();
@@ -95,6 +102,16 @@ namespace D_Zyra
 
             _config.AddSubMenu(new Menu("items", "items"));
             _config.SubMenu("items").AddSubMenu(new Menu("Offensive", "Offensive"));
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Youmuu", "Use Youmuu's")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Bilge", "Use Bilge")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("BilgeEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Bilgemyhp", "Or your Hp < ").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Blade", "Use Blade")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("BladeEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Blademyhp", "Or Your  Hp <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Hextech", "Hextech Gunblade")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("HextechEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Hextechmyhp", "Or Your  Hp <").SetValue(new Slider(85, 1, 100)));
             _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("usedfg", "Use DFG")).SetValue(true);
 
             _config.SubMenu("items").AddSubMenu(new Menu("Deffensive", "Deffensive"));
@@ -650,13 +667,45 @@ namespace D_Zyra
         }
         private static void UseItemes(Obj_AI_Hero target)
         {
-           
+            var iBilge = _config.Item("Bilge").GetValue<bool>();
+            var iBilgeEnemyhp = target.Health <=
+                                (target.MaxHealth * (_config.Item("BilgeEnemyhp").GetValue<Slider>().Value) / 100);
+            var iBilgemyhp = _player.Health <=
+                             (_player.MaxHealth * (_config.Item("Bilgemyhp").GetValue<Slider>().Value) / 100);
+            var iBlade = _config.Item("Blade").GetValue<bool>();
+            var iBladeEnemyhp = target.Health <=
+                                (target.MaxHealth * (_config.Item("BladeEnemyhp").GetValue<Slider>().Value) / 100);
+            var iBlademyhp = _player.Health <=
+                             (_player.MaxHealth * (_config.Item("Blademyhp").GetValue<Slider>().Value) / 100);
+            var iYoumuu = _config.Item("Youmuu").GetValue<bool>();
+            var iHextech = _config.Item("Hextech").GetValue<bool>();
+            var iHextechEnemyhp = target.Health <=
+                                  (target.MaxHealth * (_config.Item("HextechEnemyhp").GetValue<Slider>().Value) / 100);
+            var iHextechmyhp = _player.Health <=
+                               (_player.MaxHealth * (_config.Item("Hextechmyhp").GetValue<Slider>().Value) / 100);
             var iOmen = _config.Item("Omen").GetValue<bool>();
             var iOmenenemys = ObjectManager.Get<Obj_AI_Hero>().Count(hero => hero.IsValidTarget(450)) >=
                               _config.Item("Omenenemys").GetValue<Slider>().Value;
            var ilotis = _config.Item("lotis").GetValue<bool>();
 
-            
+           if (_player.Distance(target) <= 450 && iBilge && (iBilgeEnemyhp || iBilgemyhp) && _bilge.IsReady())
+           {
+               _bilge.Cast(target);
+
+           }
+           if (_player.Distance(target) <= 450 && iBlade && (iBladeEnemyhp || iBlademyhp) && _blade.IsReady())
+           {
+               _blade.Cast(target);
+
+           }
+           if (_player.Distance(target) <= 450 && iYoumuu && _youmuu.IsReady())
+           {
+               _youmuu.Cast();
+           }
+           if (_player.Distance(target) <= 700 && iHextech && (iHextechEnemyhp || iHextechmyhp) && _hextech.IsReady())
+           {
+               _hextech.Cast(target);
+           }
             if (iOmenenemys && iOmen && _rand.IsReady())
             {
                 _rand.Cast();

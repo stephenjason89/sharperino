@@ -307,8 +307,8 @@ namespace D_Elise
             if (_config.Item("ActiveJungle").GetValue<KeyBind>().Active)
             {
                 JungleFarm();
-
             }
+            Usepotion();
             if (_config.Item("ActiveCombo").GetValue<KeyBind>().Active)
             {
                 Combo();
@@ -326,8 +326,7 @@ namespace D_Elise
             {
                 AutoE();
             }
-            Usepotion();
-        }
+          }
        
         private static void Smiteontarget(Obj_AI_Hero target)
         {

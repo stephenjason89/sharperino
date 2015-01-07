@@ -22,8 +22,8 @@ namespace D_Zyra
         private static Int32 _lastSkin;
 
         private static SpellSlot _igniteSlot;
-      
-        private static Items.Item _rand, _lotis, _youmuu, _blade, _bilge, _dfg, _hextech;
+
+        private static Items.Item _rand, _lotis, _youmuu, _blade, _bilge, _dfg, _hextech, _frostqueen;
 
         private static SpellSlot _smiteSlot = SpellSlot.Unknown;
 
@@ -68,6 +68,7 @@ namespace D_Zyra
             _blade = new Items.Item(3153, 475f);
             _rand = new Items.Item(3143, 490f);
             _lotis = new Items.Item(3190, 590f);
+            _frostqueen = new Items.Item(3092, 800f);
             SetSmiteSlot();
 
             //D Zyra
@@ -113,6 +114,7 @@ namespace D_Zyra
             _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("HextechEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
             _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Hextechmyhp", "Or Your  Hp <").SetValue(new Slider(85, 1, 100)));
             _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("usedfg", "Use DFG")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("frostQ", "Use Frost Queen")).SetValue(true);
 
             _config.SubMenu("items").AddSubMenu(new Menu("Deffensive", "Deffensive"));
             _config.SubMenu("items").SubMenu("Deffensive").AddItem(new MenuItem("Omen", "Use Randuin Omen")).SetValue(true);
@@ -191,6 +193,7 @@ namespace D_Zyra
             _config.SubMenu("Misc").AddItem(new MenuItem("useEkill", "E to Killsteal")).SetValue(true);
             _config.SubMenu("Misc").AddItem(new MenuItem("Inter_E", "Interrupter E")).SetValue(true);
             _config.SubMenu("Misc").AddItem(new MenuItem("Gap_E", "GapClosers E")).SetValue(true);
+            _config.SubMenu("Misc").AddItem(new MenuItem("usefrostq", "Frost Queen to GapClosers")).SetValue(true);
             _config.SubMenu("Misc").AddItem(new MenuItem("support", "Support Mode")).SetValue(true);
 
             //Damage after combo:
@@ -326,20 +329,27 @@ namespace D_Zyra
             dmg += _player.GetAutoAttackDamage(hero, true);
             return (float) dmg;
         }
-
+        
         private static void AntiGapcloser_OnEnemyGapcloser(ActiveGapcloser gapcloser)
         {
             var pos = _e.GetPrediction(gapcloser.Sender).CastPosition;
-            if (!_config.Item("Gap_E").GetValue<bool>()) return;
-            if ( _e.IsReady() && gapcloser.Sender.IsValidTarget(_e.Range) && _w.IsReady())
+            if (_config.Item("Gap_E").GetValue<bool>())
             {
-                _e.CastIfHitchanceEquals(gapcloser.Sender, HitChance.High, Packets());
-                Utility.DelayAction.Add(50, () => _w.Cast(new Vector3(pos.X - 2, pos.Y - 2, pos.Z), Packets()));
-                Utility.DelayAction.Add(150, () => _w.Cast(new Vector3(pos.X + 2, pos.Y + 2, pos.Z), Packets()));
+                if (_e.IsReady() && gapcloser.Sender.IsValidTarget(_e.Range) && _w.IsReady())
+                {
+                    _e.CastIfHitchanceEquals(gapcloser.Sender, HitChance.High, Packets());
+                    Utility.DelayAction.Add(50, () => _w.Cast(new Vector3(pos.X - 2, pos.Y - 2, pos.Z), Packets()));
+                    Utility.DelayAction.Add(150, () => _w.Cast(new Vector3(pos.X + 2, pos.Y + 2, pos.Z), Packets()));
+                }
+                else if (_e.IsReady() && gapcloser.Sender.IsValidTarget(_e.Range))
+                {
+                    _e.CastIfHitchanceEquals(gapcloser.Sender, HitChance.High, Packets());
+                }
             }
-            else if (_e.IsReady() && gapcloser.Sender.IsValidTarget(_e.Range))
+            if (Items.HasItem(3092) && Items.CanUseItem(3092) && _config.Item("usefrostq").GetValue<bool>() &&
+                gapcloser.Sender.IsValidTarget(800))
             {
-                _e.CastIfHitchanceEquals(gapcloser.Sender, HitChance.High, Packets());
+                _frostqueen.Cast(gapcloser.Sender);
             }
         }
 
@@ -687,7 +697,8 @@ namespace D_Zyra
             var iOmenenemys = ObjectManager.Get<Obj_AI_Hero>().Count(hero => hero.IsValidTarget(450)) >=
                               _config.Item("Omenenemys").GetValue<Slider>().Value;
            var ilotis = _config.Item("lotis").GetValue<bool>();
-
+           var ifrost = _config.Item("frostQ").GetValue<bool>();
+            
            if (_player.Distance(target) <= 450 && iBilge && (iBilgeEnemyhp || iBilgemyhp) && _bilge.IsReady())
            {
                _bilge.Cast(target);
@@ -719,6 +730,11 @@ namespace D_Zyra
                         hero.Distance(_player.ServerPosition) <= _lotis.Range && _lotis.IsReady())
                         _lotis.Cast();
                 }
+            }
+            if (ifrost && _frostqueen.IsReady())
+            {
+                _frostqueen.Cast();
+
             }
         }
         private static void Usepotion()

@@ -752,7 +752,7 @@ namespace D_Zyra
                         _lotis.Cast();
                 }
             }
-            if (ifrost && _frostqueen.IsReady())
+            if (ifrost && _frostqueen.IsReady() && _player.Distance(target) <= _frostqueen.Range)
             {
                 _frostqueen.Cast();
 

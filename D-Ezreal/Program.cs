@@ -27,16 +27,16 @@ namespace D_Ezreal
 
         private static int _lastPingT = 0;
 
-       
-        private static readonly int[] Ezrealap = { 2, 3, 2, 1, 2, 4, 2, 3, 2, 3, 4, 3, 3, 1, 1, 4, 1, 1 };
-        private static readonly int[] Ezrealad = { 1, 3, 1, 2, 1, 4, 1, 3, 1, 3, 4, 3, 2, 3, 2, 4, 2, 2 };
-        private static readonly int[] EzrealQwe = { 1, 3, 2, 1, 1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3 };
-        private static readonly int[] EzrealWqe = { 1, 3, 2, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3 };
 
-        private static readonly int[] SmitePurple = { 3713, 3726, 3725, 3726, 3723 };
-        private static readonly int[] SmiteGrey = { 3711, 3722, 3721, 3720, 3719 };
-        private static readonly int[] SmiteRed = { 3715, 3718, 3717, 3716, 3714 };
-        private static readonly int[] SmiteBlue = { 3706, 3710, 3709, 3708, 3707 };
+        private static readonly int[] Ezrealap = {2, 3, 2, 1, 2, 4, 2, 3, 2, 3, 4, 3, 3, 1, 1, 4, 1, 1};
+        private static readonly int[] Ezrealad = {1, 3, 1, 2, 1, 4, 1, 3, 1, 3, 4, 3, 2, 3, 2, 4, 2, 2};
+        private static readonly int[] EzrealQwe = {1, 3, 2, 1, 1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3};
+        private static readonly int[] EzrealWqe = {1, 3, 2, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3};
+
+        private static readonly int[] SmitePurple = {3713, 3726, 3725, 3726, 3723};
+        private static readonly int[] SmiteGrey = {3711, 3722, 3721, 3720, 3719};
+        private static readonly int[] SmiteRed = {3715, 3718, 3717, 3716, 3714};
+        private static readonly int[] SmiteBlue = {3706, 3710, 3709, 3708, 3707};
         private static Items.Item _youmuu, _blade, _bilge, _dfg, _hextech;
 
         private static void Main(string[] args)
@@ -53,7 +53,7 @@ namespace D_Ezreal
             Utility.DelayAction.Add(150, SimplePing);
             Utility.DelayAction.Add(300, SimplePing);
             Utility.DelayAction.Add(400, SimplePing);
-          }
+        }
 
         private static void SimplePing()
         {
@@ -71,8 +71,8 @@ namespace D_Ezreal
             _e = new Spell(SpellSlot.E, 475);
             _r = new Spell(SpellSlot.R, 3000);
 
-            _q.SetSkillshot(0.25f, 60f, 2000f, true, SkillshotType.SkillshotLine);
-            _w.SetSkillshot(0.25f, 80f, 2000f, false, SkillshotType.SkillshotLine);
+            _q.SetSkillshot(0.5f, 80f, 1200f, true, SkillshotType.SkillshotLine);
+            _w.SetSkillshot(0.5f, 80f, 1200f, false, SkillshotType.SkillshotLine);
             _e.SetSkillshot(0.25f, 80f, 1600f, false, SkillshotType.SkillshotCircle);
             _r.SetSkillshot(1f, 160f, 2000f, false, SkillshotType.SkillshotLine);
 
@@ -151,8 +151,12 @@ namespace D_Ezreal
             //items
             _config.AddSubMenu(new Menu("items", "items"));
             _config.SubMenu("items").AddSubMenu(new Menu("Offensive", "Offensive"));
-            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("usemuramana", "Use Muramana")).SetValue(true);
-            _config.SubMenu("items").SubMenu("Offensive")
+            _config.SubMenu("items")
+                .SubMenu("Offensive")
+                .AddItem(new MenuItem("usemuramana", "Use Muramana"))
+                .SetValue(true);
+            _config.SubMenu("items")
+                .SubMenu("Offensive")
                 .AddItem(new MenuItem("muramanamin", "Use Muramana until MP < %").SetValue(new Slider(25, 1, 100)));
             _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Youmuu", "Use Youmuu's")).SetValue(true);
             _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Bilge", "Use Bilge")).SetValue(true);
@@ -180,6 +184,23 @@ namespace D_Ezreal
                 .SubMenu("Offensive")
                 .AddItem(new MenuItem("Hextechmyhp", "Or Your  Hp <").SetValue(new Slider(85, 1, 100)));
             _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("usedfg", "Use DFG")).SetValue(true);
+
+            _config.SubMenu("items").AddSubMenu(new Menu("Deffensive", "Deffensive"));
+            _config.SubMenu("items").SubMenu("Deffensive").AddSubMenu(new Menu("Cleanse", "Cleanse"));
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("useqss", "Use QSS/Mercurial Scimitar/Dervish Blade")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("blind", "Blind")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("charm", "Charm")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("fear", "Fear")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("flee", "Flee")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("snare", "Snare")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("taunt", "Taunt")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("suppression", "Suppression")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("stun", "Stun")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("polymorph", "Polymorph")).SetValue(false);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("silence", "Silence")).SetValue(false);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("zedultexecute", "Zed Ult")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("Cleansemode", "Use Cleanse")).SetValue(new StringList(new string[2] { "Always", "In Combo" }));
+
             _config.SubMenu("items").AddSubMenu(new Menu("Potions", "Potions"));
             _config.SubMenu("items")
                 .SubMenu("Potions")
@@ -243,7 +264,8 @@ namespace D_Ezreal
 
             //Misc
             _config.AddSubMenu(new Menu("Misc", "Misc"));
-            _config.SubMenu("Misc").AddItem(new MenuItem("pingulti", "Ping If R Dmg>Enemy Health (only local)").SetValue(false));
+            _config.SubMenu("Misc")
+                .AddItem(new MenuItem("pingulti", "Ping If R Dmg>Enemy Health (only local)").SetValue(false));
             _config.SubMenu("Misc").AddItem(new MenuItem("useQK", "Use Q KillSteal")).SetValue(true);
             _config.SubMenu("Misc").AddItem(new MenuItem("useWK", "Use W KillSteal")).SetValue(true);
             _config.SubMenu("Misc").AddItem(new MenuItem("useEK", "Use (E-Q) or (E-W) KillSteal")).SetValue(true);
@@ -252,7 +274,7 @@ namespace D_Ezreal
             _config.SubMenu("Misc").AddItem(new MenuItem("useQstun", "Auto Q Taunt/Fear/Charm/Snare")).SetValue(true);
             _config.SubMenu("Misc").AddItem(new MenuItem("EZAutoLevel", "Auto Level")).SetValue(false);
             _config.SubMenu("Misc").AddItem(new MenuItem("EZStyle", "Level Sequence").SetValue(
-               new StringList(new[] { "W-E-Q", "W-Q-E", "Q-E-W", "Q-W-E" })));
+                new StringList(new[] {"W-E-Q", "W-Q-E", "Q-E-W", "Q-W-E"})));
             _config.SubMenu("Misc").AddItem(new MenuItem("skinez", "Use Custom Skin").SetValue(false));
             _config.SubMenu("Misc").AddItem(new MenuItem("skinezreal", "Skin Changer").SetValue(new Slider(4, 1, 8)));
 
@@ -304,10 +326,10 @@ namespace D_Ezreal
         {
             AutoLevel.Enabled(e.GetNewValue<bool>());
         }
-        
+
         private static void Game_OnGameUpdate(EventArgs args)
         {
-           if (_config.Item("pingulti").GetValue<bool>())
+            if (_config.Item("pingulti").GetValue<bool>())
             {
                 foreach (
                     var enemy in
@@ -318,8 +340,9 @@ namespace D_Ezreal
                                     hero.IsValidTarget(30000) &&
                                     _player.GetSpellDamage(hero, SpellSlot.R)*0.9 > hero.Health)
                     )
-                {Game.PrintChat("ping");
-                 Ping(enemy.Position.To2D());
+                {
+                    Game.PrintChat("ping");
+                    Ping(enemy.Position.To2D());
                 }
             }
             if (_config.Item("skinez").GetValue<bool>() && SkinChanged())
@@ -381,6 +404,8 @@ namespace D_Ezreal
             Muramana();
             KillSteal();
             Usepotion();
+            Usecleanse();
+
         }
 
         private static int[] Style()
@@ -399,7 +424,7 @@ namespace D_Ezreal
                     return null;
             }
         }
-        
+
         private static void GenModelPacket(string champ, int skinId)
         {
             Packet.S2C.UpdateModel.Encoded(new Packet.S2C.UpdateModel.Struct(_player.NetworkId, skinId, champ))
@@ -437,11 +462,12 @@ namespace D_Ezreal
                 }
             }
         }
+
         private static void Muramana()
         {
             var muranama = _player.Mana >=
-                                (_player.MaxMana * (_config.Item("muramanamin").GetValue<Slider>().Value) / 100);
-            if (!_config.Item("usemuramana").GetValue<bool>())return;
+                           (_player.MaxMana*(_config.Item("muramanamin").GetValue<Slider>().Value)/100);
+            if (!_config.Item("usemuramana").GetValue<bool>()) return;
             if (muranama && _player.Buffs.Count(buf => buf.Name == "Muramana") == 0 &&
                 _config.Item("ActiveCombo").GetValue<KeyBind>().Active)
             {
@@ -583,22 +609,30 @@ namespace D_Ezreal
                 MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
             var iusehppotion = _config.Item("usehppotions").GetValue<bool>();
             var iusepotionhp = _player.Health <=
-                               (_player.MaxHealth * (_config.Item("usepotionhp").GetValue<Slider>().Value) / 100);
+                               (_player.MaxHealth*(_config.Item("usepotionhp").GetValue<Slider>().Value)/100);
             var iusemppotion = _config.Item("usemppotions").GetValue<bool>();
             var iusepotionmp = _player.Mana <=
-                               (_player.MaxMana * (_config.Item("usepotionmp").GetValue<Slider>().Value) / 100);
+                               (_player.MaxMana*(_config.Item("usepotionmp").GetValue<Slider>().Value)/100);
             if (Utility.InFountain() || ObjectManager.Player.HasBuff("Recall")) return;
 
             if (Utility.CountEnemysInRange(800) > 0 ||
                 (mobs.Count > 0 && _config.Item("ActiveJungle").GetValue<KeyBind>().Active && (Items.HasItem(1039) ||
-                 SmiteBlue.Any(i => Items.HasItem(i)) || SmiteRed.Any(i => Items.HasItem(i)) || SmitePurple.Any(i => Items.HasItem(i)) ||
-                  SmiteBlue.Any(i => Items.HasItem(i)) || SmiteGrey.Any(i => Items.HasItem(i))
-                     )))
+                                                                                               SmiteBlue.Any(
+                                                                                                   i => Items.HasItem(i)) ||
+                                                                                               SmiteRed.Any(
+                                                                                                   i => Items.HasItem(i)) ||
+                                                                                               SmitePurple.Any(
+                                                                                                   i => Items.HasItem(i)) ||
+                                                                                               SmiteBlue.Any(
+                                                                                                   i => Items.HasItem(i)) ||
+                                                                                               SmiteGrey.Any(
+                                                                                                   i => Items.HasItem(i))
+                    )))
             {
                 if (iusepotionhp && iusehppotion &&
-                     !(ObjectManager.Player.HasBuff("RegenerationPotion", true) ||
-                       ObjectManager.Player.HasBuff("ItemCrystalFlask", true) ||
-                       ObjectManager.Player.HasBuff("ItemMiniRegenPotion", true)))
+                    !(ObjectManager.Player.HasBuff("RegenerationPotion", true) ||
+                      ObjectManager.Player.HasBuff("ItemCrystalFlask", true) ||
+                      ObjectManager.Player.HasBuff("ItemMiniRegenPotion", true)))
                 {
                     if (Items.HasItem(2041) && Items.CanUseItem(2041))
                     {
@@ -613,7 +647,7 @@ namespace D_Ezreal
                         Items.UseItem(2003);
                     }
                 }
-                
+
                 if (iusepotionmp && iusemppotion &&
                     !(ObjectManager.Player.HasBuff("FlaskOfCrystalWater", true) ||
                       ObjectManager.Player.HasBuff("ItemCrystalFlask", true) ||
@@ -653,7 +687,7 @@ namespace D_Ezreal
                                   (target.MaxHealth*(_config.Item("HextechEnemyhp").GetValue<Slider>().Value)/100);
             var iHextechmyhp = _player.Health <=
                                (_player.MaxHealth*(_config.Item("Hextechmyhp").GetValue<Slider>().Value)/100);
-            
+
             if (_player.Distance(target) <= 450 && iBilge && (iBilgeEnemyhp || iBilgemyhp) && _bilge.IsReady())
             {
                 _bilge.Cast(target);
@@ -672,7 +706,7 @@ namespace D_Ezreal
             {
                 _hextech.Cast(target);
             }
-            
+
         }
 
         private static void KillSteal()
@@ -803,8 +837,116 @@ namespace D_Ezreal
             }
         }
 
+        private static void Usecleanse()
+        {
+            if (_player.IsDead ||
+                (_config.Item("Cleansemode").GetValue<StringList>().SelectedIndex == 1 &&
+                 !_config.Item("ActiveCombo").GetValue<KeyBind>().Active)) return;
+            if (Cleanse(_player) && _config.Item("useqss").GetValue<bool>())
+            {
+                if (_player.HasBuff("zedulttargetmark"))
+                {
+                    if (Items.HasItem(3140) && Items.CanUseItem(3140))
+                        Utility.DelayAction.Add(500, () => Items.UseItem(3140));
+                    else if (Items.HasItem(3139) && Items.CanUseItem(3139))
+                        Utility.DelayAction.Add(500, () => Items.UseItem(3139));
+                    else if (Items.HasItem(3137) && Items.CanUseItem(3137))
+                        Utility.DelayAction.Add(500, () => Items.UseItem(3137));
+                }
+                else
+                {
+                    if (Items.HasItem(3140) && Items.CanUseItem(3140)) Items.UseItem(3140);
+                    else if (Items.HasItem(3139) && Items.CanUseItem(3139)) Items.UseItem(3139);
+                    else if (Items.HasItem(3137) && Items.CanUseItem(3137)) Items.UseItem(3137);
+                }
+            }
+        }
 
-        private static void Drawing_OnDraw(EventArgs args)
+        private static bool Cleanse(Obj_AI_Hero hero)
+        {
+            bool cc = false;
+            if (_config.Item("blind").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Blind))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("charm").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Charm))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("fear").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Fear))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("flee").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Flee))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("snare").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Snare))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("taunt").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Taunt))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("suppression").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Suppression))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("stun").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Stun))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("polymorph").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Polymorph))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("silence").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Silence))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("zedultexecute").GetValue<bool>())
+            {
+                if (_player.HasBuff("zedulttargetmark"))
+                {
+                    cc = true;
+                }
+            }
+           return cc;
+        }
+   
+
+    private static void Drawing_OnDraw(EventArgs args)
         {
             if (_config.Item("damagetest").GetValue<bool>())
             {

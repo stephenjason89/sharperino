@@ -121,7 +121,27 @@ namespace D_Zyra
             _config.SubMenu("items").SubMenu("Deffensive").AddItem(new MenuItem("Omenenemys", "Randuin if enemys>").SetValue(new Slider(2, 1, 5)));
             _config.SubMenu("items").SubMenu("Deffensive").AddItem(new MenuItem("lotis", "Use Iron Solari")).SetValue(true);
             _config.SubMenu("items").SubMenu("Deffensive").AddItem(new MenuItem("lotisminhp", "Solari if Ally Hp<").SetValue(new Slider(35, 1, 100)));
-           
+            _config.SubMenu("items").AddSubMenu(new Menu("Deffensive", "Deffensive"));
+            _config.SubMenu("items").SubMenu("Deffensive").AddSubMenu(new Menu("Cleanse", "Cleanse"));
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddSubMenu(new Menu("Mikael's Crucible", "mikael"));
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").SubMenu("mikael").AddItem(new MenuItem("usemikael", "Use Mikael's to remove Debuffs")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").SubMenu("mikael").AddItem(new MenuItem("mikaelusehp", "Or Use if Mikael's Ally Hp <%").SetValue(new Slider(25, 1, 100)));
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly))
+                _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").SubMenu("mikael").AddItem(new MenuItem("mikaeluse" + hero.BaseSkinName, hero.BaseSkinName).SetValue(true));
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("useqss", "Use QSS/Mercurial Scimitar/Dervish Blade")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("blind", "Blind")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("charm", "Charm")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("fear", "Fear")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("flee", "Flee")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("snare", "Snare")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("taunt", "Taunt")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("suppression", "Suppression")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("stun", "Stun")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("polymorph", "Polymorph")).SetValue(false);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("silence", "Silence")).SetValue(false);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("zedultexecute", "Zed Ult")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("Cleansemode", "")).SetValue(new StringList(new string[2] { "Cleanse Always", "Cleanse in Combo" }));
+
             _config.SubMenu("items").AddSubMenu(new Menu("Potions", "Potions"));
             _config.SubMenu("items").SubMenu("Potions").AddItem(new MenuItem("usehppotions", "Use Healt potion/Flask/Biscuit")).SetValue(true);
             _config.SubMenu("items").SubMenu("Potions").AddItem(new MenuItem("usepotionhp", "If Health % <").SetValue(new Slider(85, 1, 100)));
@@ -270,7 +290,8 @@ namespace D_Zyra
 
             _orbwalker.SetAttack(true);
             KillSteal();
-           
+            Usecleanse();
+
         }
         // princer007  Code
         static int Getallies(float range)
@@ -897,6 +918,130 @@ namespace D_Zyra
                 }
             }
         }
+
+        private static void Usecleanse()
+        {
+            if (_player.IsDead ||
+                (_config.Item("Cleansemode").GetValue<StringList>().SelectedIndex == 1 &&
+                 !_config.Item("ActiveCombo").GetValue<KeyBind>().Active)) return;
+            if (Cleanse(_player) && _config.Item("useqss").GetValue<bool>())
+            {
+                if (_player.HasBuff("zedulttargetmark"))
+                {
+                    if (Items.HasItem(3140) && Items.CanUseItem(3140))
+                        Utility.DelayAction.Add(500, () => Items.UseItem(3140));
+                    else if (Items.HasItem(3139) && Items.CanUseItem(3139))
+                        Utility.DelayAction.Add(500, () => Items.UseItem(3139));
+                    else if (Items.HasItem(3137) && Items.CanUseItem(3137))
+                        Utility.DelayAction.Add(500, () => Items.UseItem(3137));
+                }
+                else
+                {
+                    if (Items.HasItem(3140) && Items.CanUseItem(3140)) Items.UseItem(3140);
+                    else if (Items.HasItem(3139) && Items.CanUseItem(3139)) Items.UseItem(3139);
+                    else if (Items.HasItem(3137) && Items.CanUseItem(3137)) Items.UseItem(3137);
+                }
+            }
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly))
+            {
+                var usemikael = _config.Item("usemikael").GetValue<bool>();
+                var mikaeluse = hero.Health <=
+                                (hero.MaxHealth*(_config.Item("mikaelusehp").GetValue<Slider>().Value)/100);
+                if (((Cleanse(hero) && usemikael) || mikaeluse) && _config.Item("mikaeluse" + hero.BaseSkinName) != null &&
+                    _config.Item("mikaeluse" + hero.BaseSkinName).GetValue<bool>() == true)
+                {
+                    if (Items.HasItem(3222) && Items.CanUseItem(3222))
+                        if (_player.HasBuff("zedulttargetmark"))
+                            Utility.DelayAction.Add(500, () => Items.UseItem(3222));
+                        else
+                            Items.UseItem(3222);
+                }
+            }
+        }
+
+        private static bool Cleanse(Obj_AI_Hero hero)
+        {
+            bool cc = false;
+            if (_config.Item("blind").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Blind))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("charm").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Charm))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("fear").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Fear))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("flee").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Flee))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("snare").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Snare))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("taunt").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Taunt))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("suppression").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Suppression))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("stun").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Stun))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("polymorph").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Polymorph))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("silence").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Silence))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("zedultexecute").GetValue<bool>())
+            {
+                if (_player.HasBuff("zedulttargetmark"))
+                {
+                    cc = true;
+                }
+            }
+            return cc;
+        }
+
         private static void Drawing_OnDraw(EventArgs args)
         {
             if (_config.Item("Drawsmite").GetValue<bool>() )

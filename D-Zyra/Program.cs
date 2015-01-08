@@ -23,7 +23,7 @@ namespace D_Zyra
 
         private static SpellSlot _igniteSlot;
 
-        private static Items.Item _rand, _lotis, _youmuu, _blade, _bilge, _dfg, _hextech, _frostqueen;
+        private static Items.Item _rand, _lotis, _youmuu, _blade, _bilge, _dfg, _hextech, _frostqueen, _mikael;
 
         private static SpellSlot _smiteSlot = SpellSlot.Unknown;
 
@@ -69,6 +69,7 @@ namespace D_Zyra
             _rand = new Items.Item(3143, 490f);
             _lotis = new Items.Item(3190, 590f);
             _frostqueen = new Items.Item(3092, 800f);
+            _mikael =new Items.Item(3222, 600f);
             SetSmiteSlot();
 
             //D Zyra
@@ -126,7 +127,7 @@ namespace D_Zyra
             _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddSubMenu(new Menu("Mikael's Crucible", "mikael"));
             _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").SubMenu("mikael").AddItem(new MenuItem("usemikael", "Use Mikael's to remove Debuffs")).SetValue(true);
             _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").SubMenu("mikael").AddItem(new MenuItem("mikaelusehp", "Or Use if Mikael's Ally Hp <%").SetValue(new Slider(25, 1, 100)));
-            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly))
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => (hero.IsAlly|| hero.IsMe)))
                 _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").SubMenu("mikael").AddItem(new MenuItem("mikaeluse" + hero.BaseSkinName, hero.BaseSkinName).SetValue(true));
             _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("useqss", "Use QSS/Mercurial Scimitar/Dervish Blade")).SetValue(true);
             _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("blind", "Blind")).SetValue(true);
@@ -144,9 +145,9 @@ namespace D_Zyra
 
             _config.SubMenu("items").AddSubMenu(new Menu("Potions", "Potions"));
             _config.SubMenu("items").SubMenu("Potions").AddItem(new MenuItem("usehppotions", "Use Healt potion/Flask/Biscuit")).SetValue(true);
-            _config.SubMenu("items").SubMenu("Potions").AddItem(new MenuItem("usepotionhp", "If Health % <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items").SubMenu("Potions").AddItem(new MenuItem("usepotionhp", "If Health % <").SetValue(new Slider(35, 1, 100)));
             _config.SubMenu("items").SubMenu("Potions").AddItem(new MenuItem("usemppotions", "Use Mana potion/Flask/Biscuit")).SetValue(true);
-            _config.SubMenu("items").SubMenu("Potions").AddItem(new MenuItem("usepotionmp", "If Mana % <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items").SubMenu("Potions").AddItem(new MenuItem("usepotionmp", "If Mana % <").SetValue(new Slider(35, 1, 100)));
 
             //harass
             _config.AddSubMenu(new Menu("Harass", "Harass"));
@@ -214,7 +215,7 @@ namespace D_Zyra
             _config.SubMenu("Misc").AddItem(new MenuItem("Inter_E", "Interrupter E")).SetValue(true);
             _config.SubMenu("Misc").AddItem(new MenuItem("Gap_E", "GapClosers E")).SetValue(true);
             _config.SubMenu("Misc").AddItem(new MenuItem("usefrostq", "Frost Queen to GapClosers")).SetValue(true);
-            _config.SubMenu("Misc").AddItem(new MenuItem("support", "Support Mode")).SetValue(true);
+            _config.SubMenu("Misc").AddItem(new MenuItem("support", "Support Mode")).SetValue(false);
 
             //Damage after combo:
             MenuItem dmgAfterComboItem = new MenuItem("DamageAfterCombo", "Draw damage after combo").SetValue(true);
@@ -942,19 +943,21 @@ namespace D_Zyra
                     else if (Items.HasItem(3137) && Items.CanUseItem(3137)) Items.UseItem(3137);
                 }
             }
-            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly))
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => (hero.IsAlly || hero.IsMe)))
             {
                 var usemikael = _config.Item("usemikael").GetValue<bool>();
                 var mikaeluse = hero.Health <=
-                                (hero.MaxHealth*(_config.Item("mikaelusehp").GetValue<Slider>().Value)/100);
+                                (hero.MaxHealth * (_config.Item("mikaelusehp").GetValue<Slider>().Value) / 100);
                 if (((Cleanse(hero) && usemikael) || mikaeluse) && _config.Item("mikaeluse" + hero.BaseSkinName) != null &&
                     _config.Item("mikaeluse" + hero.BaseSkinName).GetValue<bool>() == true)
                 {
-                    if (Items.HasItem(3222) && Items.CanUseItem(3222))
+                    if (_mikael.IsReady() && hero.Distance(_player.ServerPosition) <= _mikael.Range)
+                    {
                         if (_player.HasBuff("zedulttargetmark"))
-                            Utility.DelayAction.Add(500, () => Items.UseItem(3222));
+                            Utility.DelayAction.Add(500, () => _mikael.Cast(hero));
                         else
-                            Items.UseItem(3222);
+                            _mikael.Cast(hero);
+                    }
                 }
             }
         }

@@ -32,6 +32,8 @@ namespace D_Kayle
         private static SpellSlot _smiteSlot = SpellSlot.Unknown;
 
         private static Spell _smite;
+
+        private static Items.Item _rand, _lotis, _blade, _dfg, _frostqueen, _mikael;
         //Credits to Kurisu
         private static readonly int[] SmitePurple = { 3713, 3726, 3725, 3726, 3723 };
         private static readonly int[] SmiteGrey = { 3711, 3722, 3721, 3720, 3719 };
@@ -64,6 +66,15 @@ namespace D_Kayle
             SpellList.Add(_e);
             SpellList.Add(_r);
 
+            _dfg = Utility.Map.GetMap()._MapType == Utility.Map.MapType.TwistedTreeline ||
+                 Utility.Map.GetMap()._MapType == Utility.Map.MapType.CrystalScar
+              ? new Items.Item(3188, 750)
+              : new Items.Item(3128, 750);
+            _rand = new Items.Item(3143, 490f);
+            _lotis = new Items.Item(3190, 590f);
+            _frostqueen = new Items.Item(3092, 800f);
+            _mikael = new Items.Item(3222, 600f);
+
             _igniteSlot = _player.GetSpellSlot("SummonerDot");
 
             //D Nidalee
@@ -88,22 +99,41 @@ namespace D_Kayle
             _config.SubMenu("Combo")
                 .AddItem(new MenuItem("ActiveCombo", "Combo!").SetValue(new KeyBind(32, KeyBindType.Press)));
 
+
             _config.AddSubMenu(new Menu("items", "items"));
+            _config.SubMenu("items").AddSubMenu(new Menu("Offensive", "Offensive"));
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("usedfg", "Use DFG")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("frostQ", "Use Frost Queen")).SetValue(true);
+            _config.SubMenu("items").AddSubMenu(new Menu("Deffensive", "Deffensive"));
+            _config.SubMenu("items").SubMenu("Deffensive").AddItem(new MenuItem("Omen", "Use Randuin Omen")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").AddItem(new MenuItem("Omenenemys", "Randuin if enemys>").SetValue(new Slider(2, 1, 5)));
+            _config.SubMenu("items").SubMenu("Deffensive").AddItem(new MenuItem("lotis", "Use Iron Solari")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").AddItem(new MenuItem("lotisminhp", "Solari if Ally Hp<").SetValue(new Slider(35, 1, 100)));
+            _config.SubMenu("items").SubMenu("Deffensive").AddSubMenu(new Menu("Cleanse", "Cleanse"));
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddSubMenu(new Menu("Mikael's Crucible", "mikael"));
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").SubMenu("mikael").AddItem(new MenuItem("usemikael", "Use Mikael's to remove Debuffs")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").SubMenu("mikael").AddItem(new MenuItem("mikaelusehp", "Or Use if Mikael's Ally Hp <%").SetValue(new Slider(25, 1, 100)));
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly))
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").SubMenu("mikael").AddItem(new MenuItem("mikaeluse" + hero.BaseSkinName, hero.BaseSkinName).SetValue(true));
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("useqss", "Use QSS/Mercurial Scimitar/Dervish Blade")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("blind", "Blind")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("charm", "Charm")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("fear", "Fear")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("flee", "Flee")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("snare", "Snare")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("taunt", "Taunt")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("suppression", "Suppression")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("stun", "Stun")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("polymorph", "Polymorph")).SetValue(false);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("silence", "Silence")).SetValue(false);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("zedultexecute", "Zed Ult")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").SubMenu("Cleanse").AddItem(new MenuItem("Cleansemode", "")).SetValue(new StringList(new string[2] { "Cleanse Always", "Cleanse in Combo" }));
+
             _config.SubMenu("items").AddSubMenu(new Menu("Potions", "Potions"));
-            _config.SubMenu("items")
-                .SubMenu("Potions")
-                .AddItem(new MenuItem("usehppotions", "Use Healt potion/Flask/Biscuit"))
-                .SetValue(true);
-            _config.SubMenu("items")
-                .SubMenu("Potions")
-                .AddItem(new MenuItem("usepotionhp", "If Health % <").SetValue(new Slider(85, 1, 100)));
-            _config.SubMenu("items")
-                .SubMenu("Potions")
-                .AddItem(new MenuItem("usemppotions", "Use Mana potion/Flask/Biscuit"))
-                .SetValue(true);
-            _config.SubMenu("items")
-                .SubMenu("Potions")
-                .AddItem(new MenuItem("usepotionmp", "If Mana % <").SetValue(new Slider(85, 1, 100)));
+            _config.SubMenu("items").SubMenu("Potions").AddItem(new MenuItem("usehppotions", "Use Healt potion/Flask/Biscuit")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Potions").AddItem(new MenuItem("usepotionhp", "If Health % <").SetValue(new Slider(35, 1, 100)));
+            _config.SubMenu("items").SubMenu("Potions").AddItem(new MenuItem("usemppotions", "Use Mana potion/Flask/Biscuit")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Potions").AddItem(new MenuItem("usepotionmp", "If Mana % <").SetValue(new Slider(35, 1, 100)));
 
             //utilities
             _config.AddSubMenu(new Menu("Utilities", "utilities"));
@@ -115,13 +145,13 @@ namespace D_Kayle
             _config.SubMenu("utilities").AddSubMenu(new Menu("Use W Ally", "Use W Ally"));
              _config.SubMenu("utilities").SubMenu("Use W Ally").AddItem(new MenuItem("allyW", "W Ally")).SetValue(true);
              _config.SubMenu("utilities").SubMenu("Use W Ally").AddItem(new MenuItem("allyhealper", "Ally Health %")).SetValue(new Slider(40, 1, 100));
-             foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly))
+             foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly && !hero.IsMe))
              _config.SubMenu("utilities").SubMenu("Use W Ally").AddItem(new MenuItem("usewally" + hero.BaseSkinName, hero.BaseSkinName).SetValue(true));
 
              _config.SubMenu("utilities").AddSubMenu(new Menu("Use R Ally", "Use R Ally"));
              _config.SubMenu("utilities").SubMenu("Use R Ally").AddItem(new MenuItem("allyR", "R Ally Use")).SetValue(true);
              _config.SubMenu("utilities").SubMenu("Use R Ally").AddItem(new MenuItem("ultiallyHP", "Ally Health %")).SetValue(new Slider(40, 1, 100));
-            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly))
+             foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly && !hero.IsMe))
                 _config.SubMenu("utilities").SubMenu("Use R Ally").AddItem(new MenuItem("userally" + hero.BaseSkinName, hero.BaseSkinName).SetValue(true));
 
             //Harass
@@ -155,7 +185,7 @@ namespace D_Kayle
             _config.SubMenu("Farm").SubMenu("Jungleclear").AddItem(new MenuItem("UseQjungle", "Use Q Jungle")).SetValue(true);
             _config.SubMenu("Farm").SubMenu("Jungleclear").AddItem(new MenuItem("UseEjungle", "Use E Jungle")).SetValue(true);
             _config.SubMenu("Farm").SubMenu("Jungleclear").AddItem(new MenuItem("junglemana", "Minimum Mana").SetValue(new Slider(60, 1, 100)));
-            _config.SubMenu("Farm").SubMenu("Jungleclear").AddItem(new MenuItem("Activejungle", "Jungle Clear").SetValue(new KeyBind("X".ToCharArray()[0], KeyBindType.Press)));
+            _config.SubMenu("Farm").SubMenu("Jungleclear").AddItem(new MenuItem("Activejungle", "Jungle Clear").SetValue(new KeyBind("V".ToCharArray()[0], KeyBindType.Press)));
            
             //Smite 
             _config.AddSubMenu(new Menu("Smite", "Smite"));
@@ -176,6 +206,7 @@ namespace D_Kayle
             _config.SubMenu("Misc")
                 .AddItem(
                     new MenuItem("Escape", "Escapes key").SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
+            _config.SubMenu("Misc").AddItem(new MenuItem("support", "Support Mode")).SetValue(false);
 
             //Damage after combo:
             MenuItem dmgAfterComboItem = new MenuItem("DamageAfterCombo", "Draw damage after combo").SetValue(true);
@@ -205,6 +236,7 @@ namespace D_Kayle
             Game.OnGameUpdate += Game_OnGameUpdate;
             Drawing.OnDraw += Drawing_OnDraw;
             AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
+            Orbwalking.BeforeAttack += Orbwalking_BeforeAttack;
 
             Game.PrintChat("<font color='#881df2'>D-Kayle By Diabaths </font>Loaded!");
             if (_config.Item("skinKa").GetValue<bool>())
@@ -250,7 +282,7 @@ namespace D_Kayle
                Farm();
             }
             if (_config.Item("Activejungle").GetValue<KeyBind>().Active &&
-                (100*(_player.Mana/_player.MaxMana)) > _config.Item("junglemana").GetValue<Slider>().Value)
+                (100 * (_player.Mana / _player.MaxMana)) > _config.Item("junglemana").GetValue<Slider>().Value)
             {
                 JungleFarm();
             }
@@ -264,6 +296,173 @@ namespace D_Kayle
             AllyR();
             AllyW();
             KillSteal();
+            Usecleanse();
+        }
+        private static void UseItemes(Obj_AI_Hero target)
+        {
+            var iOmen = _config.Item("Omen").GetValue<bool>();
+            var iOmenenemys = ObjectManager.Get<Obj_AI_Hero>().Count(hero => hero.IsValidTarget(450)) >=
+                              _config.Item("Omenenemys").GetValue<Slider>().Value;
+            var ilotis = _config.Item("lotis").GetValue<bool>();
+            var ifrost = _config.Item("frostQ").GetValue<bool>();
+
+          
+            if (iOmenenemys && iOmen && _rand.IsReady())
+            {
+                _rand.Cast();
+
+            }
+            if (ilotis)
+            {
+                foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly || hero.IsMe))
+                {
+                    if (hero.Health <= (hero.MaxHealth * (_config.Item("lotisminhp").GetValue<Slider>().Value) / 100) &&
+                        hero.Distance(_player.ServerPosition) <= _lotis.Range && _lotis.IsReady())
+                        _lotis.Cast();
+                }
+            }
+            if (ifrost && _frostqueen.IsReady() && _player.Distance(target) <= _frostqueen.Range)
+            {
+                _frostqueen.Cast();
+
+            }
+        }
+
+        private static void Usecleanse()
+        {
+            if (_player.IsDead ||
+                (_config.Item("Cleansemode").GetValue<StringList>().SelectedIndex == 1 &&
+                 !_config.Item("ActiveCombo").GetValue<KeyBind>().Active)) return;
+            if (Cleanse(_player) && _config.Item("useqss").GetValue<bool>())
+            {
+                if (_player.HasBuff("zedulttargetmark"))
+                {
+                    if (Items.HasItem(3140) && Items.CanUseItem(3140))
+                        Utility.DelayAction.Add(500, () => Items.UseItem(3140));
+                    else if (Items.HasItem(3139) && Items.CanUseItem(3139))
+                        Utility.DelayAction.Add(500, () => Items.UseItem(3139));
+                    else if (Items.HasItem(3137) && Items.CanUseItem(3137))
+                        Utility.DelayAction.Add(500, () => Items.UseItem(3137));
+                }
+                else
+                {
+                    if (Items.HasItem(3140) && Items.CanUseItem(3140)) Items.UseItem(3140);
+                    else if (Items.HasItem(3139) && Items.CanUseItem(3139)) Items.UseItem(3139);
+                    else if (Items.HasItem(3137) && Items.CanUseItem(3137)) Items.UseItem(3137);
+                }
+            }
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => (hero.IsAlly || hero.IsMe)))
+            {
+                var usemikael = _config.Item("usemikael").GetValue<bool>();
+                var mikaeluse = hero.Health <=
+                                (hero.MaxHealth*(_config.Item("mikaelusehp").GetValue<Slider>().Value)/100);
+                if (((Cleanse(hero) && usemikael) || mikaeluse) && _config.Item("mikaeluse" + hero.BaseSkinName) != null &&
+                    _config.Item("mikaeluse" + hero.BaseSkinName).GetValue<bool>() == true)
+                {
+                    if (_mikael.IsReady() && hero.Distance(_player.ServerPosition) <= _mikael.Range)
+                    {
+                        if (_player.HasBuff("zedulttargetmark"))
+                            Utility.DelayAction.Add(500, () => _mikael.Cast(hero));
+                        else
+                            _mikael.Cast(hero);
+                    }
+                }
+            }
+        }
+
+        private static bool Cleanse(Obj_AI_Hero hero)
+        {
+            bool cc = false;
+            if (_config.Item("blind").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Blind))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("charm").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Charm))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("fear").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Fear))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("flee").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Flee))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("snare").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Snare))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("taunt").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Taunt))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("suppression").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Suppression))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("stun").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Stun))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("polymorph").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Polymorph))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("silence").GetValue<bool>())
+            {
+                if (hero.HasBuffOfType(BuffType.Silence))
+                {
+                    cc = true;
+                }
+            }
+            if (_config.Item("zedultexecute").GetValue<bool>())
+            {
+                if (_player.HasBuff("zedulttargetmark"))
+                {
+                    cc = true;
+                }
+            }
+            return cc;
+        }
+        // princer007  Code
+        static int Getallies(float range)
+        {
+            int allies = 0;
+            foreach (Obj_AI_Hero hero in ObjectManager.Get<Obj_AI_Hero>())
+                if (hero.IsAlly && !hero.IsMe && _player.Distance(hero) <= range) allies++;
+            return allies;
+        }
+        static void Orbwalking_BeforeAttack(LeagueSharp.Common.Orbwalking.BeforeAttackEventArgs args)
+        {
+            if (Getallies(1000) > 0 && ((Obj_AI_Base)_orbwalker.GetTarget()).IsMinion && /*args.Unit.IsMinion &&*/ _config.Item("support").GetValue<bool>()) args.Process = false;
         }
         private static void Smiteontarget(Obj_AI_Hero target)
         {
@@ -305,7 +504,7 @@ namespace D_Kayle
 
         private static void AllyR()
         {
-            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly))
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly && !hero.IsMe))
             {
                 if (_player.HasBuff("Recall") || Utility.InFountain()) return;
                 if (_config.Item("allyR").GetValue<bool>() &&
@@ -392,6 +591,11 @@ namespace D_Kayle
                 damage += _player.GetSpellDamage(enemy, SpellSlot.E);
                 damage = damage + _player.GetAutoAttackDamage(enemy, true)*4;
             }
+            if (Items.HasItem(3128) && Items.CanUseItem(3128))
+            {
+                damage += _player.GetItemDamage(enemy, Damage.DamageItems.Dfg);
+                damage = damage * 1.2;
+            }
             if (itemscheck &&
                 ObjectManager.Player.Spellbook.CanUseSpell(_smiteSlot) == SpellState.Ready)
             {
@@ -408,10 +612,16 @@ namespace D_Kayle
         private static void Combo()
         {
             var target = TargetSelector.GetTarget(_r.Range + 200, TargetSelector.DamageType.Magical);
-
+            var usedfg = _config.Item("usedfg").GetValue<bool>();
             if (target != null)
             {
                 Smiteontarget(target);
+                UseItemes(target);
+                if (_player.Distance(target) <= _dfg.Range && usedfg &&
+                    _dfg.IsReady() && target.Health <= ComboDamage(target))
+                {
+                    _dfg.Cast(target);
+                }
                 if (_config.Item("UseIgnitecombo").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
                _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
                 {
@@ -542,6 +752,7 @@ namespace D_Kayle
             if (!Orbwalking.CanMove(40)) return;
             var mobs = MinionManager.GetMinions(_player.ServerPosition, _q.Range, MinionTypes.All, MinionTeam.Neutral,
                 MinionOrderTypes.MaxHealth);
+          
             if (mobs.Count > 0)
             {
                 var mob = mobs[0];

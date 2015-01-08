@@ -183,14 +183,14 @@ namespace D_Nidalee
                 .SetValue(true);
             Config.SubMenu("items")
                 .SubMenu("Potions")
-                .AddItem(new MenuItem("usepotionhp", "If Health % <").SetValue(new Slider(85, 1, 100)));
+                .AddItem(new MenuItem("usepotionhp", "If Health % <").SetValue(new Slider(35, 1, 100)));
             Config.SubMenu("items")
                 .SubMenu("Potions")
                 .AddItem(new MenuItem("usemppotions", "Use Mana potion/Flask/Biscuit"))
                 .SetValue(true);
             Config.SubMenu("items")
                 .SubMenu("Potions")
-                .AddItem(new MenuItem("usepotionmp", "If Mana % <").SetValue(new Slider(85, 1, 100)));
+                .AddItem(new MenuItem("usepotionmp", "If Mana % <").SetValue(new Slider(35, 1, 100)));
 
             //Harass
             Config.AddSubMenu(new Menu("Harass", "Harass"));

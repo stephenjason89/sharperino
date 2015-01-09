@@ -53,8 +53,8 @@ namespace D_Shyvana
             _e.SetSkillshot(0.25f, 60f, 1700, false, SkillshotType.SkillshotLine);
             _r.SetSkillshot(0.25f, 150f, 1500, false, SkillshotType.SkillshotLine);
 
-            _bilge = new Items.Item(3144, 475f);
-            _blade = new Items.Item(3153, 425f);
+            _bilge = new Items.Item(3144, 450f);
+            _blade = new Items.Item(3153, 450f);
             _hydra = new Items.Item(3074, 250f);
             _tiamat = new Items.Item(3077, 250f);
             _rand = new Items.Item(3143, 490f);

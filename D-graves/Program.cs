@@ -50,8 +50,8 @@ namespace D_Graves
             _r.SetSkillshot(0.22f, 150f, 2100, true, SkillshotType.SkillshotLine);
 
             _youmuu = new Items.Item(3142, 10);
-            _bilge = new Items.Item(3144, 475f);
-            _blade = new Items.Item(3153, 475f);
+            _bilge = new Items.Item(3144, 450f);
+            _blade = new Items.Item(3153, 450f);
             //D Graves
             _config = new Menu("D-Graves", "D-Graves", true);
 

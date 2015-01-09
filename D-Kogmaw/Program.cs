@@ -72,8 +72,8 @@ namespace D_Kogmaw
 
             _hextech = new Items.Item(3146, 700);
             _youmuu = new Items.Item(3142, 10);
-            _bilge = new Items.Item(3144, 475f);
-            _blade = new Items.Item(3153, 475f);
+            _bilge = new Items.Item(3144, 450f);
+            _blade = new Items.Item(3153, 450f);
             _igniteSlot = _player.GetSpellSlot("SummonerDot");
 
             CreateSkins();
@@ -494,6 +494,7 @@ namespace D_Kogmaw
             var useR = _config.Item("UseRC").GetValue<bool>();
             var ignitecombo = _config.Item("UseIgnitecombo").GetValue<bool>();
             var rLim = _config.Item("RlimC").GetValue<Slider>().Value;
+            UseItemes(etarget);
             if (_player.Distance(etarget) <= _dfg.Range && _config.Item("usedfg").GetValue<bool>() &&
                 _dfg.IsReady() && etarget.Health <= ComboDamage(etarget))
             {
@@ -536,7 +537,6 @@ namespace D_Kogmaw
                 if (t != null && _player.Distance(t) < _r.Range && predictionr.Hitchance >= Rchangecombo())
                     _r.Cast(predictionr.CastPosition);
             }
-            UseItemes(etarget);
         }
 
         private static void UseItemes(Obj_AI_Hero target)
@@ -957,11 +957,12 @@ namespace D_Kogmaw
                 }
             }
             if (_r.IsReady() && _config.Item("UseRM").GetValue<bool>())
-                foreach (
-                    var hero in
-                        ObjectManager.Get<Obj_AI_Hero>()
-                            .Where(
-                                hero => hero.IsValidTarget(_r.Range) && _r.GetDamage(hero) > hero.Health))
+                foreach (var hero in
+                    ObjectManager.Get<Obj_AI_Hero>()
+                        .Where(
+                            hero =>
+                                hero.IsValidTarget(_r.Range) &&
+                                ObjectManager.Player.GetSpellDamage(hero, SpellSlot.R) > hero.Health))
                     _r.Cast(hero, false, true);
         }
 

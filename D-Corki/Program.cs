@@ -47,6 +47,9 @@ namespace D_Corki
             _e.SetSkillshot(0f, (float) (45*Math.PI/180), 1500, false, SkillshotType.SkillshotCone);
             _r.SetSkillshot(0.20f, 40f, 2000f, true, SkillshotType.SkillshotLine);
 
+            _youmuu = new Items.Item(3142, 10);
+            _bilge = new Items.Item(3144, 450f);
+            _blade = new Items.Item(3153, 450f);
 
             //D Corki
             _config = new Menu("D-Corki", "D-Corki", true);
@@ -517,7 +520,6 @@ namespace D_Corki
                                 (target.MaxHealth * (_config.Item("BladeEnemyhp").GetValue<Slider>().Value) / 100);
             var iBlademyhp = _player.Health <=
                              (_player.MaxHealth * (_config.Item("Blademyhp").GetValue<Slider>().Value) / 100);
-            var iZhonyas = _config.Item("Zhonyas").GetValue<bool>();
             var iYoumuu = _config.Item("Youmuu").GetValue<bool>();
 
             if (_player.Distance(target) <= 450 && iBilge && (iBilgeEnemyhp || iBilgemyhp) && _bilge.IsReady())

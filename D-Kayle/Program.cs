@@ -33,7 +33,7 @@ namespace D_Kayle
 
         private static Spell _smite;
 
-        private static Items.Item _rand, _lotis, _blade, _dfg, _frostqueen, _mikael;
+        private static Items.Item _rand, _lotis, _dfg, _frostqueen, _mikael;
         //Credits to Kurisu
         private static readonly int[] SmitePurple = { 3713, 3726, 3725, 3726, 3723 };
         private static readonly int[] SmiteGrey = { 3711, 3722, 3721, 3720, 3719 };

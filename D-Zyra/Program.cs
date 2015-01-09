@@ -64,8 +64,8 @@ namespace D_Zyra
                 : new Items.Item(3128, 750);
             _hextech = new Items.Item(3146, 700);
             _youmuu = new Items.Item(3142, 10);
-            _bilge = new Items.Item(3144, 475f);
-            _blade = new Items.Item(3153, 475f);
+            _bilge = new Items.Item(3144, 450f);
+            _blade = new Items.Item(3153, 450f);
             _rand = new Items.Item(3143, 490f);
             _lotis = new Items.Item(3190, 590f);
             _frostqueen = new Items.Item(3092, 800f);

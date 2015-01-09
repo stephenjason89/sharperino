@@ -494,8 +494,8 @@ namespace D_Kogmaw
             var useR = _config.Item("UseRC").GetValue<bool>();
             var ignitecombo = _config.Item("UseIgnitecombo").GetValue<bool>();
             var rLim = _config.Item("RlimC").GetValue<Slider>().Value;
-            UseItemes(etarget);
-            if (_player.Distance(etarget) <= _dfg.Range && _config.Item("usedfg").GetValue<bool>() &&
+            UseItemes();
+            if (etarget.IsValidTarget(_dfg.Range) && _config.Item("usedfg").GetValue<bool>() &&
                 _dfg.IsReady() && etarget.Health <= ComboDamage(etarget))
             {
                 _dfg.Cast(etarget);
@@ -503,12 +503,12 @@ namespace D_Kogmaw
             if (_igniteSlot != SpellSlot.Unknown && ignitecombo &&
                 _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
             {
-                if (etarget.Health <= ComboDamage(etarget))
+                if (etarget.Health <= ComboDamage(etarget) && etarget.IsValidTarget(600))
                 {
                     _player.Spellbook.CastSpell(_igniteSlot, etarget);
                 }
             }
-            if (useW && _w.IsReady() && etarget.Distance(_player.Position) < _e.Range)
+            if (useW && _w.IsReady())
             {
                 foreach (
                     var hero in
@@ -520,63 +520,67 @@ namespace D_Kogmaw
             {
                 var t = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
                 var prediction = _q.GetPrediction(t);
-                if (t != null && _player.Distance(t) < _q.Range && prediction.Hitchance >= Qchangecombo())
+                if (t.IsValidTarget(_q.Range) && prediction.Hitchance >= Qchangecombo())
                     _q.Cast(prediction.CastPosition);
             }
             if (useE && _e.IsReady())
             {
                 var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
                 var predictione = _e.GetPrediction(t);
-                if (t != null && _player.Distance(t) < _e.Range && predictione.Hitchance >= Echangecombo())
+                if (t != null && t.IsValidTarget(_e.Range) && predictione.Hitchance >= Echangecombo())
                     _e.Cast(predictione.CastPosition);
             }
-            if (useR && _r.IsReady() && GetBuffStacks() < rLim)
+          if (useR && _r.IsReady() && GetBuffStacks() < rLim)
             {
                 var t = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
                 var predictionr = _r.GetPrediction(t);
-                if (t != null && _player.Distance(t) < _r.Range && predictionr.Hitchance >= Rchangecombo())
+                if ( t.IsValidTarget(_r.Range) && predictionr.Hitchance >= Rchangecombo())
                     _r.Cast(predictionr.CastPosition);
             }
         }
 
-        private static void UseItemes(Obj_AI_Hero target)
+        private static void UseItemes()
         {
-            var iBilge = _config.Item("Bilge").GetValue<bool>();
-            var iBilgeEnemyhp = target.Health <=
-                                (target.MaxHealth*(_config.Item("BilgeEnemyhp").GetValue<Slider>().Value)/100);
-            var iBilgemyhp = _player.Health <=
-                             (_player.MaxHealth*(_config.Item("Bilgemyhp").GetValue<Slider>().Value)/100);
-            var iBlade = _config.Item("Blade").GetValue<bool>();
-            var iBladeEnemyhp = target.Health <=
-                                (target.MaxHealth*(_config.Item("BladeEnemyhp").GetValue<Slider>().Value)/100);
-            var iBlademyhp = _player.Health <=
-                             (_player.MaxHealth*(_config.Item("Blademyhp").GetValue<Slider>().Value)/100);
-            var iYoumuu = _config.Item("Youmuu").GetValue<bool>();
-            var iHextech = _config.Item("Hextech").GetValue<bool>();
-            var iHextechEnemyhp = target.Health <=
-                                  (target.MaxHealth*(_config.Item("HextechEnemyhp").GetValue<Slider>().Value)/100);
-            var iHextechmyhp = _player.Health <=
-                               (_player.MaxHealth*(_config.Item("Hextechmyhp").GetValue<Slider>().Value)/100);
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy))
+            {
+                var iBilge = _config.Item("Bilge").GetValue<bool>();
+                var iBilgeEnemyhp = hero.Health <=
+                                    (hero.MaxHealth*(_config.Item("BilgeEnemyhp").GetValue<Slider>().Value)/100);
+                var iBilgemyhp = _player.Health <=
+                                 (_player.MaxHealth*(_config.Item("Bilgemyhp").GetValue<Slider>().Value)/100);
+                var iBlade = _config.Item("Blade").GetValue<bool>();
+                var iBladeEnemyhp = hero.Health <=
+                                    (hero.MaxHealth*(_config.Item("BladeEnemyhp").GetValue<Slider>().Value)/100);
+                var iBlademyhp = _player.Health <=
+                                 (_player.MaxHealth*(_config.Item("Blademyhp").GetValue<Slider>().Value)/100);
+                var iYoumuu = _config.Item("Youmuu").GetValue<bool>();
+                var iHextech = _config.Item("Hextech").GetValue<bool>();
+                var iHextechEnemyhp = hero.Health <=
+                                      (hero.MaxHealth*(_config.Item("HextechEnemyhp").GetValue<Slider>().Value)/100);
+                var iHextechmyhp = _player.Health <=
+                                   (_player.MaxHealth*(_config.Item("Hextechmyhp").GetValue<Slider>().Value)/100);
+                if (hero.IsValidTarget(450) && iBilge && (iBilgeEnemyhp || iBilgemyhp) && _bilge.IsReady())
+                {
+                    _bilge.Cast(hero);
 
-            if (_player.Distance(target) <= 450 && iBilge && (iBilgeEnemyhp || iBilgemyhp) && _bilge.IsReady())
-            {
-                _bilge.Cast(target);
+                }
+                if (hero.IsValidTarget(450) && iBlade && (iBladeEnemyhp || iBlademyhp) && _blade.IsReady())
+                {
 
-            }
-            if (_player.Distance(target) <= 450 && iBlade && (iBladeEnemyhp || iBlademyhp) && _blade.IsReady())
-            {
-                _blade.Cast(target);
+                    _blade.Cast(hero);
 
-            }
-            if (_player.Distance(target) <= 450 && iYoumuu && _youmuu.IsReady())
-            {
-                _youmuu.Cast();
-            }
-            if (_player.Distance(target) <= 700 && iHextech && (iHextechEnemyhp || iHextechmyhp) && _hextech.IsReady())
-            {
-                _hextech.Cast(target);
+                }
+                if (hero.IsValidTarget(450) && iYoumuu && _youmuu.IsReady())
+                {
+                    _youmuu.Cast();
+                }
+                if (hero.IsValidTarget(700) && iHextech && (iHextechEnemyhp || iHextechmyhp) && _hextech.IsReady())
+                {
+                    _hextech.Cast(hero);
+                }
             }
         }
+
         private static void Usepotion()
         {
             var mobs = MinionManager.GetMinions(_player.ServerPosition, _q.Range,
@@ -946,24 +950,21 @@ namespace D_Kogmaw
 
         private static void KillSteal()
         {
-            var target = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
-            var igniteDmg = _player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
-            if (target != null && _config.Item("useigniteks").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
-                _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy))
             {
-                if (igniteDmg > target.Health)
+                if (_config.Item("useigniteks").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
+                    _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready && hero.IsValidTarget(600))
                 {
-                    _player.Spellbook.CastSpell(_igniteSlot, target);
+                    var igniteDmg = _player.GetSummonerSpellDamage(hero, Damage.SummonerSpell.Ignite);
+                    if (igniteDmg > hero.Health)
+                    {
+                        _player.Spellbook.CastSpell(_igniteSlot, hero);
+                    }
                 }
-            }
-            if (_r.IsReady() && _config.Item("UseRM").GetValue<bool>())
-                foreach (var hero in
-                    ObjectManager.Get<Obj_AI_Hero>()
-                        .Where(
-                            hero =>
-                                hero.IsValidTarget(_r.Range) &&
-                                ObjectManager.Player.GetSpellDamage(hero, SpellSlot.R) > hero.Health))
+                if (_r.IsReady() && _config.Item("UseRM").GetValue<bool>() &&hero.IsValidTarget(_r.Range) &&
+                    ObjectManager.Player.GetSpellDamage(hero, SpellSlot.R) > hero.Health)
                     _r.Cast(hero, false, true);
+            }
         }
 
         private static void Drawing_OnDraw(EventArgs args)

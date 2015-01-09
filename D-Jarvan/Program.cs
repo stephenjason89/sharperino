@@ -356,7 +356,7 @@ namespace D_Jarvan
 
             _orbwalker.SetAttack(true);
 
-            KillSteal();
+           KillSteal();
             
         }
 
@@ -420,15 +420,18 @@ namespace D_Jarvan
             return (float) damage;
         }
 
-        private static void Smiteontarget(Obj_AI_Hero target)
+        private static void Smiteontarget()
         {
-            var usesmite = _config.Item("smitecombo").GetValue<bool>();
-            var itemscheck = SmiteBlue.Any(i => Items.HasItem(i)) || SmiteRed.Any(i => Items.HasItem(i));
-            if (itemscheck && usesmite &&
-                ObjectManager.Player.Spellbook.CanUseSpell(_smiteSlot) == SpellState.Ready &&
-                target.Distance(_player.Position) < _smite.Range)
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy))
             {
-                ObjectManager.Player.Spellbook.CastSpell(_smiteSlot, target);
+                var usesmite = _config.Item("smitecombo").GetValue<bool>();
+                var itemscheck = SmiteBlue.Any(i => Items.HasItem(i)) || SmiteRed.Any(i => Items.HasItem(i));
+                if (itemscheck && usesmite &&
+                    ObjectManager.Player.Spellbook.CanUseSpell(_smiteSlot) == SpellState.Ready &&
+                    hero.IsValidTarget(_smite.Range))
+                {
+                    ObjectManager.Player.Spellbook.CastSpell(_smiteSlot, hero);
+                }
             }
         }
 
@@ -440,8 +443,8 @@ namespace D_Jarvan
             var useR = _config.Item("UseRC").GetValue<bool>();
             var autoR = _config.Item("UseRE").GetValue<bool>();
             var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
-            Smiteontarget(t);
-            if (t != null && _config.Item("UseIgnite").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
+            Smiteontarget();
+            if (t.IsValidTarget(600) && _config.Item("UseIgnite").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
                 _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
             {
                 if (ComboDamage(t) > t.Health)
@@ -451,19 +454,19 @@ namespace D_Jarvan
             }
             if (useR && _r.IsReady())
             {
-                if (t != null && !_haveulti)
+                if (t.IsValidTarget(_q.Range) && !_haveulti)
                     if (!t.HasBuff("JudicatorIntervention") && !t.HasBuff("Undying Rage") &&
                         ComboDamage(t) > t.Health)
                         _r.CastIfHitchanceEquals(t, HitChance.Medium, Packets());
             }
-            if (useE && _e.IsReady() && t.Distance(_player.Position) < _q.Range && _q.IsReady())
+            if (useE && _e.IsReady() && t.IsValidTarget(_q.Range) && _q.IsReady())
             {
                 //xsalice Code
                 var vec = t.ServerPosition - _player.ServerPosition;
                 var castBehind = _e.GetPrediction(t).CastPosition + Vector3.Normalize(vec)*100;
                 _e.Cast(castBehind, Packets());
             }
-            if (useQ && t.Distance(_player.Position) < _q.Range && _q.IsReady() && _epos != default(Vector3) &&
+            if (useQ && t.IsValidTarget(_q.Range) && _q.IsReady() && _epos != default(Vector3) &&
                 t.IsValidTarget(200, true, _epos))
             {
                 _q.Cast(_epos, Packets());
@@ -471,21 +474,21 @@ namespace D_Jarvan
 
             if (useW && _w.IsReady())
             {
-                if (t != null && t.Distance(_player.Position) < _w.Range)
+                if (t.IsValidTarget(_w.Range))
                     _w.Cast();
             }
             if (useQ && _q.IsReady() && !_e.IsReady())
             {
-                if (t != null && t.Distance(_player.Position) < _q.Range)
+                if (t.IsValidTarget(_q.Range))
                     _q.Cast(t, Packets(), true);
             }
             if (_r.IsReady() && autoR && !_haveulti)
             {
                 if (GetNumberHitByR(t) >=
-                    _config.Item("MinTargets").GetValue<Slider>().Value)
+                    _config.Item("MinTargets").GetValue<Slider>().Value && t.IsValidTarget(_r.Range))
                     _r.Cast(t, Packets(), true);
             }
-            UseItemes(t);
+            UseItemes();
         }
         private static int GetNumberHitByR(Obj_AI_Hero target)
         {
@@ -515,15 +518,13 @@ namespace D_Jarvan
             {
                 _player.IssueOrder(GameObjectOrder.AttackUnit, t);
             }
-            Smiteontarget(t);
-            if (_e.IsReady() && _q.IsReady() && manacheck)
+            Smiteontarget();
+            if (_e.IsReady() && _q.IsReady() && manacheck && t.IsValidTarget(_q.Range))
             {
-                if (t != null && _player.Distance(t) > _q.Range)
-                    _e.Cast(t.ServerPosition, Packets());
+                _e.Cast(t.ServerPosition, Packets());
                 _q.Cast(t.ServerPosition, Packets());
-
             }
-            if (t != null && _config.Item("UseIgnite").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
+            if (t.IsValidTarget(600) && _config.Item("UseIgnite").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
                 _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
             {
                 if (ComboDamage(t) > t.Health)
@@ -531,16 +532,16 @@ namespace D_Jarvan
                     _player.Spellbook.CastSpell(_igniteSlot, t);
                 }
             }
-            if (_r.IsReady() && !_haveulti && t != null)
+            if (_r.IsReady() && !_haveulti && t.IsValidTarget(_r.Range))
             {
                _r.CastIfHitchanceEquals(t, HitChance.Immobile, Packets());
             }
             if (_w.IsReady())
             {
-                if (t != null && t.Distance(_player.Position) < _w.Range)
+                if (t.IsValidTarget(_w.Range))
                     _w.Cast();
             }
-            UseItemes(t);
+            UseItemes();
            }
 
         private static void Harass()
@@ -554,28 +555,28 @@ namespace D_Jarvan
             if (useEqhp && useEq && _q.IsReady() && _e.IsReady())
             {
                 var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
-                if (t != null && t.Distance(_player.Position) < _e.Range)
+                if (t.IsValidTarget(_e.Range))
                     _e.Cast(t, Packets());
                 _q.Cast(t, Packets());
             }
             if (useQ && _q.IsReady())
             {
                 var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
-                if (t != null && t.Distance(_player.Position) < _q.Range)
+                if (t.IsValidTarget(_q.Range))
                     _q.Cast(t, Packets());
             }
             if (useE && _e.IsReady())
             {
                 var t = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
-                if (t != null && t.Distance(_player.Position) < _e.Range)
+                if (t.IsValidTarget(_e.Range))
                     _e.Cast(t, Packets());
             }
 
-            if (useItemsH && _tiamat.IsReady() && target.Distance(_player.Position) < _tiamat.Range)
+            if (useItemsH && _tiamat.IsReady() && target.IsValidTarget(_tiamat.Range))
             {
                 _tiamat.Cast();
             }
-            if (useItemsH && _hydra.IsReady() && target.Distance(_player.Position) < _hydra.Range)
+            if (useItemsH && _hydra.IsReady() && target.IsValidTarget(_hydra.Range))
             {
                 _hydra.Cast();
             }
@@ -596,14 +597,14 @@ namespace D_Jarvan
             {
                 _player.IssueOrder(GameObjectOrder.AttackUnit, t);
             }
-            Smiteontarget(t);
+            Smiteontarget();
             if (_flashSlot != SpellSlot.Unknown && _player.Spellbook.CanUseSpell(_flashSlot) == SpellState.Ready)
             {
-                if (_e.IsReady() && _q.IsReady() && manacheck && t != null && _player.Distance(t) > _q.Range)
+                if (_e.IsReady() && _q.IsReady() && manacheck  && !t.IsValidTarget(_q.Range))
                 {
                     _e.Cast(Game.CursorPos, Packets());
                 }
-                if (_epos != default(Vector3) && _q.InRange(_epos))
+                if (_epos != default(Vector3) && _q.IsInRange(_epos))
                 {
                     _q.Cast(_epos, Packets());
                 }
@@ -613,7 +614,7 @@ namespace D_Jarvan
                     _player.Spellbook.CastSpell(_flashSlot, t.ServerPosition);
                 }
             }
-            UseItemes(t);
+            UseItemes();
         }
 
         private static void Laneclear()
@@ -874,50 +875,53 @@ namespace D_Jarvan
                 }
             }
         }
-        private static void UseItemes(Obj_AI_Hero target)
+        private static void UseItemes()
         {
-            var iBilge = _config.Item("Bilge").GetValue<bool>();
-            var iBilgeEnemyhp = target.Health <=
-                                (target.MaxHealth*(_config.Item("BilgeEnemyhp").GetValue<Slider>().Value)/100);
-            var iBilgemyhp = _player.Health <=
-                             (_player.MaxHealth*(_config.Item("Bilgemyhp").GetValue<Slider>().Value)/100);
-            var iBlade = _config.Item("Blade").GetValue<bool>();
-            var iBladeEnemyhp = target.Health <=
-                                (target.MaxHealth*(_config.Item("BladeEnemyhp").GetValue<Slider>().Value)/100);
-            var iBlademyhp = _player.Health <=
-                             (_player.MaxHealth*(_config.Item("Blademyhp").GetValue<Slider>().Value)/100);
-            var iOmen = _config.Item("Omen").GetValue<bool>();
-            var iOmenenemys = ObjectManager.Get<Obj_AI_Hero>().Count(hero => hero.IsValidTarget(450)) >=
-                              _config.Item("Omenenemys").GetValue<Slider>().Value;
-            var iTiamat = _config.Item("Tiamat").GetValue<bool>();
-            var iHydra = _config.Item("Hydra").GetValue<bool>();
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy))
+            {
+                var iBilge = _config.Item("Bilge").GetValue<bool>();
+                var iBilgeEnemyhp = hero.Health <=
+                                    (hero.MaxHealth * (_config.Item("BilgeEnemyhp").GetValue<Slider>().Value) / 100);
+                var iBilgemyhp = _player.Health <=
+                                 (_player.MaxHealth*(_config.Item("Bilgemyhp").GetValue<Slider>().Value)/100);
+                var iBlade = _config.Item("Blade").GetValue<bool>();
+                var iBladeEnemyhp = hero.Health <=
+                                    (hero.MaxHealth * (_config.Item("BladeEnemyhp").GetValue<Slider>().Value) / 100);
+                var iBlademyhp = _player.Health <=
+                                 (_player.MaxHealth*(_config.Item("Blademyhp").GetValue<Slider>().Value)/100);
+                var iOmen = _config.Item("Omen").GetValue<bool>();
+                var iOmenenemys = hero.CountEnemysInRange(450) >= _config.Item("Omenenemys").GetValue<Slider>().Value;
+                var iTiamat = _config.Item("Tiamat").GetValue<bool>();
+                var iHydra = _config.Item("Hydra").GetValue<bool>();
+
+
+                if (hero.IsValidTarget(450) && iBilge && (iBilgeEnemyhp || iBilgemyhp) && _bilge.IsReady())
+                {
+                    _bilge.Cast(hero);
+
+                }
+                if (hero.IsValidTarget(450) && iBlade && (iBladeEnemyhp || iBlademyhp) && _blade.IsReady())
+                {
+                    _blade.Cast(hero);
+
+                }
+                if (iTiamat && _tiamat.IsReady() && hero.IsValidTarget(_tiamat.Range))
+                {
+                    _tiamat.Cast();
+
+                }
+                if (iHydra && _hydra.IsReady() && hero.IsValidTarget(_hydra.Range))
+                {
+                    _hydra.Cast();
+
+                }
+                if (iOmenenemys && iOmen && _rand.IsReady())
+                {
+                    _rand.Cast();
+
+                }
+            }
             var ilotis = _config.Item("lotis").GetValue<bool>();
-           
-            if (_player.Distance(target) <= 450 && iBilge && (iBilgeEnemyhp || iBilgemyhp) && _bilge.IsReady())
-            {
-                _bilge.Cast(target);
-
-            }
-            if (_player.Distance(target) <= 450 && iBlade && (iBladeEnemyhp || iBlademyhp) && _blade.IsReady())
-            {
-                _blade.Cast(target);
-
-            }
-            if (iTiamat && _tiamat.IsReady() && target.IsValidTarget(_tiamat.Range))
-            {
-                _tiamat.Cast();
-
-            }
-            if (iHydra && _hydra.IsReady() && target.IsValidTarget(_hydra.Range))
-            {
-                _hydra.Cast();
-
-            }
-            if (iOmenenemys && iOmen && _rand.IsReady())
-            {
-                _rand.Cast();
-
-            }
             if (ilotis)
             {
                 foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly || hero.IsMe))
@@ -987,37 +991,39 @@ namespace D_Jarvan
                 }
             }
         }
+
         private static void KillSteal()
         {
-            var target = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
-            var igniteDmg = _player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
-            if (target != null && _config.Item("UseIgnitekill").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
-                _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy))
             {
-                if (igniteDmg > target.Health)
+                var igniteDmg = _player.GetSummonerSpellDamage(hero, Damage.SummonerSpell.Ignite);
+                if (hero.IsValidTarget(600) && _config.Item("UseIgnitekill").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
+                    _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
                 {
-                    _player.Spellbook.CastSpell(_igniteSlot, target);
+                    if (igniteDmg > hero.Health)
+                    {
+                        _player.Spellbook.CastSpell(_igniteSlot, hero);
+                    }
                 }
-            }
-            if (_q.IsReady() && _config.Item("UseQM").GetValue<bool>())
-            {
-                var t = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
-                if (_q.GetDamage(t) > t.Health && _player.Distance(t) <= _q.Range)
+                if (_q.IsReady() && _config.Item("UseQM").GetValue<bool>())
                 {
-                    _q.Cast(t, Packets());
+                    if (hero != null && _q.GetDamage(hero) > hero.Health && _player.Distance(hero) <= _q.Range)
+                    {
+                        _q.Cast(hero, Packets());
+                    }
                 }
-            }
-            if (_r.IsReady() && _config.Item("UseRM").GetValue<bool>())
-            {
-                var t = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
-                if (t != null)
-                    if (!t.HasBuff("JudicatorIntervention") && !t.HasBuff("Undying Rage") && _r.GetDamage(t) > t.Health)
-                        _r.Cast(t, Packets(), true);
+                if (_r.IsReady() && _config.Item("UseRM").GetValue<bool>())
+                {
+                    if (hero != null)
+                        if (!hero.HasBuff("JudicatorIntervention") && !hero.HasBuff("Undying Rage") &&
+                            _r.GetDamage(hero) > hero.Health)
+                            _r.Cast(hero, Packets(), true);
+                }
             }
         }
 
         private static void Forest()
-        {Game.PrintChat("yoyoyoy");
+        {
             var manacheck = _player.Mana >
                             _player.Spellbook.GetSpell(SpellSlot.Q).ManaCost +
                             _player.Spellbook.GetSpell(SpellSlot.E).ManaCost;

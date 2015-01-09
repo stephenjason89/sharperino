@@ -298,35 +298,38 @@ namespace D_Kayle
             KillSteal();
             Usecleanse();
         }
-        private static void UseItemes(Obj_AI_Hero target)
+
+        private static void UseItemes()
         {
-            var iOmen = _config.Item("Omen").GetValue<bool>();
-            var iOmenenemys = ObjectManager.Get<Obj_AI_Hero>().Count(hero => hero.IsValidTarget(450)) >=
-                              _config.Item("Omenenemys").GetValue<Slider>().Value;
-            var ilotis = _config.Item("lotis").GetValue<bool>();
-            var ifrost = _config.Item("frostQ").GetValue<bool>();
-
-          
-            if (iOmenenemys && iOmen && _rand.IsReady())
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy))
             {
-                _rand.Cast();
+                var iOmen = _config.Item("Omen").GetValue<bool>();
+                var iOmenenemys = hero.CountEnemysInRange(450) >= _config.Item("Omenenemys").GetValue<Slider>().Value;
+                var ifrost = _config.Item("frostQ").GetValue<bool>();
 
+                if (ifrost && _frostqueen.IsReady() && hero.IsValidTarget(_frostqueen.Range))
+                {
+                    _frostqueen.Cast();
+
+                }
+                if (iOmenenemys && iOmen && _rand.IsReady() && hero.IsValidTarget(_rand.Range))
+                {
+                    _rand.Cast();
+
+                }
             }
+            var ilotis = _config.Item("lotis").GetValue<bool>();
             if (ilotis)
             {
                 foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly || hero.IsMe))
                 {
-                    if (hero.Health <= (hero.MaxHealth * (_config.Item("lotisminhp").GetValue<Slider>().Value) / 100) &&
+                    if (hero.Health <= (hero.MaxHealth*(_config.Item("lotisminhp").GetValue<Slider>().Value)/100) &&
                         hero.Distance(_player.ServerPosition) <= _lotis.Range && _lotis.IsReady())
                         _lotis.Cast();
                 }
             }
-            if (ifrost && _frostqueen.IsReady() && _player.Distance(target) <= _frostqueen.Range)
-            {
-                _frostqueen.Cast();
-
-            }
         }
+
 
         private static void Usecleanse()
         {
@@ -464,15 +467,18 @@ namespace D_Kayle
         {
             if (Getallies(1000) > 0 && ((Obj_AI_Base)_orbwalker.GetTarget()).IsMinion && /*args.Unit.IsMinion &&*/ _config.Item("support").GetValue<bool>()) args.Process = false;
         }
-        private static void Smiteontarget(Obj_AI_Hero target)
+        private static void Smiteontarget()
         {
-            var usesmite = _config.Item("smitecombo").GetValue<bool>();
-            var itemscheck = SmiteBlue.Any(i => Items.HasItem(i)) || SmiteRed.Any(i => Items.HasItem(i));
-            if (itemscheck && usesmite &&
-                ObjectManager.Player.Spellbook.CanUseSpell(_smiteSlot) == SpellState.Ready &&
-                target.Distance(_player.Position) < _smite.Range)
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy))
             {
-                ObjectManager.Player.Spellbook.CastSpell(_smiteSlot, target);
+                var usesmite = _config.Item("smitecombo").GetValue<bool>();
+                var itemscheck = SmiteBlue.Any(i => Items.HasItem(i)) || SmiteRed.Any(i => Items.HasItem(i));
+                if (itemscheck && usesmite &&
+                    ObjectManager.Player.Spellbook.CanUseSpell(_smiteSlot) == SpellState.Ready &&
+                    hero.IsValidTarget(_smite.Range))
+                {
+                    ObjectManager.Player.Spellbook.CastSpell(_smiteSlot, hero);
+                }
             }
         }
         private static void GenModelPacket(string champ, int skinId)
@@ -615,14 +621,14 @@ namespace D_Kayle
             var usedfg = _config.Item("usedfg").GetValue<bool>();
             if (target != null)
             {
-                Smiteontarget(target);
-                UseItemes(target);
-                if (_player.Distance(target) <= _dfg.Range && usedfg &&
+                Smiteontarget();
+                UseItemes();
+                if (target.IsValidTarget(_dfg.Range) && usedfg &&
                     _dfg.IsReady() && target.Health <= ComboDamage(target))
                 {
                     _dfg.Cast(target);
                 }
-                if (_config.Item("UseIgnitecombo").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
+                if (target.IsValidTarget(600) && _config.Item("UseIgnitecombo").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
                _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
                 {
                     if (ComboDamage(target) > target.Health -100)
@@ -630,17 +636,17 @@ namespace D_Kayle
                         _player.Spellbook.CastSpell(_igniteSlot, target);
                     }
                 }
-                if (_config.Item("UseQCombo").GetValue<bool>() && _q.IsReady() && _player.Distance(target) <= _q.Range)
+                if (_config.Item("UseQCombo").GetValue<bool>() && _q.IsReady() && target.IsValidTarget(_q.Range))
                 {
                     _q.Cast(target, Packets());
 
                 }
-                if (_config.Item("UseECombo").GetValue<bool>() && _e.IsReady() && Utility.CountEnemysInRange(650) > 0)
+                if (_config.Item("UseECombo").GetValue<bool>() && _e.IsReady() && target.CountEnemysInRange(650) > 0)
                 {
                     _e.Cast();
                 }
 
-                if (_w.IsReady() && _config.Item("UseWCombo").GetValue<bool>() && _player.Distance(target) >= _q.Range)
+                if (_w.IsReady() && _config.Item("UseWCombo").GetValue<bool>() && target.IsValidTarget(_q.Range))
                 {
                     _w.Cast(_player);
                 }
@@ -662,12 +668,12 @@ namespace D_Kayle
             _player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
             if (_player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready && _player.IsMe)
             {
-                if (_w.IsReady() && target != null && Utility.CountEnemysInRange(1200) > 0)
+                if (_w.IsReady() && Utility.CountEnemysInRange(1200) > 0)
                 {
                     _player.Spellbook.CastSpell(SpellSlot.W, _player);
                 }
             }
-            if (_player.Distance(target) <= _q.Range && (target != null) && _q.IsReady())
+            if (target.IsValidTarget(_q.Range) && _q.IsReady())
             {
                 _q.Cast(target);
             }
@@ -676,20 +682,19 @@ namespace D_Kayle
         private static void Harass()
         {
             var target = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
-            if (target != null)
+            if (target.IsValidTarget(_q.Range) && _q.IsReady() &&
+                _config.Item("harasstoggle").GetValue<KeyBind>().Active ||
+                _config.Item("UseQHarass").GetValue<bool>())
             {
-
-                if (_q.IsReady() && _config.Item("harasstoggle").GetValue<KeyBind>().Active ||
-                    _config.Item("UseQHarass").GetValue<bool>())
-                {
-                    _q.Cast(target, Packets());
-                }
-
-                if (_e.IsReady() &&  _config.Item("ActiveHarass").GetValue<KeyBind>().Active &&
-                    _config.Item("UseEHarass").GetValue<bool>())
-                    _e.Cast();
+                _q.Cast(target, Packets());
             }
+
+            if (target.IsValidTarget(_q.Range) && _e.IsReady() &&
+                _config.Item("ActiveHarass").GetValue<KeyBind>().Active &&
+                _config.Item("UseEHarass").GetValue<bool>())
+                _e.Cast();
         }
+
 
         private static void Farm()
         {
@@ -801,28 +806,31 @@ namespace D_Kayle
 
         private static void KillSteal()
         {
-            var target = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
-            var igniteDmg = _player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
-            var qhDmg = _player.GetSpellDamage(target, SpellSlot.Q);
-
-            if (target != null && _config.Item("UseIgnite").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
-                _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy))
             {
-                if (igniteDmg > target.Health)
+                var igniteDmg = _player.GetSummonerSpellDamage(hero, Damage.SummonerSpell.Ignite);
+                var qhDmg = _player.GetSpellDamage(hero, SpellSlot.Q);
+
+                if (hero.IsValidTarget(600) && _config.Item("UseIgnite").GetValue<bool>() && _igniteSlot != SpellSlot.Unknown &&
+                    _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
                 {
-                    _player.Spellbook.CastSpell(_igniteSlot, target);
+                    if (igniteDmg > hero.Health)
+                    {
+                        _player.Spellbook.CastSpell(_igniteSlot, hero);
+                    }
                 }
-            }
 
-            if (_q.IsReady() && _player.Distance(target) <= _q.Range && target != null &&
-                _config.Item("UseQKs").GetValue<bool>())
-            {
-                if (target.Health <= qhDmg)
+                if (_q.IsReady() && hero.IsValidTarget(_q.Range)  &&
+                    _config.Item("UseQKs").GetValue<bool>())
                 {
-                    _q.Cast(target, Packets());
+                    if (hero.Health <= qhDmg)
+                    {
+                        _q.Cast(hero, Packets());
+                    }
                 }
             }
         }
+
         //Credits to Kurisu
         private static string Smitetype()
         {

@@ -389,15 +389,18 @@ namespace D_Zyra
                 _e.CastIfHitchanceEquals(unit, HitChance.High, Packets());
             }
         }
-        private static void Smiteontarget(Obj_AI_Hero target)
+        private static void Smiteontarget()
         {
-            var usesmite = _config.Item("smitecombo").GetValue<bool>();
-            var itemscheck = SmiteBlue.Any(i => Items.HasItem(i)) || SmiteRed.Any(i => Items.HasItem(i));
-            if (itemscheck && usesmite &&
-                ObjectManager.Player.Spellbook.CanUseSpell(_smiteSlot) == SpellState.Ready &&
-                target.Distance(_player.Position) < _smite.Range)
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy))
             {
-                ObjectManager.Player.Spellbook.CastSpell(_smiteSlot, target);
+                var usesmite = _config.Item("smitecombo").GetValue<bool>();
+                var itemscheck = SmiteBlue.Any(i => Items.HasItem(i)) || SmiteRed.Any(i => Items.HasItem(i));
+                if (itemscheck && usesmite &&
+                    ObjectManager.Player.Spellbook.CanUseSpell(_smiteSlot) == SpellState.Ready &&
+                    hero.IsValidTarget(_smite.Range))
+                {
+                    ObjectManager.Player.Spellbook.CastSpell(_smiteSlot, hero);
+                }
             }
         }
         private static void Combo()
@@ -405,24 +408,24 @@ namespace D_Zyra
             var usedfg = _config.Item("usedfg").GetValue<bool>();
             var useignite = _config.Item("useignite").GetValue<bool>();
             var target = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
-            UseItemes(target);
-            Smiteontarget(target);
-            if (_player.Distance(target) <= _dfg.Range && usedfg &&
+            if (_config.Item("UseRE").GetValue<bool>() || _config.Item("use_ulti").GetValue<bool>())
+                CastREnemy();
+           UseItemes();
+            Smiteontarget();
+            if (target.IsValidTarget(_dfg.Range) && usedfg &&
                       _dfg.IsReady() && target.Health <= ComboDamage(target))
             {
                 _dfg.Cast(target);
             }
-            if (useignite && _igniteSlot != SpellSlot.Unknown && _player.Distance(target) <= 600 &&
+            if (useignite && _igniteSlot != SpellSlot.Unknown && target.IsValidTarget(600) &&
                    _player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
             {
-                if (target.Health <= ComboDamage(target))
+               if (target.Health <= 1.2*ComboDamage(target))
                 {
                     _player.Spellbook.CastSpell(_igniteSlot, target);
                 }
             }
-            if (_config.Item("UseRE").GetValue<bool>() || _config.Item("use_ulti").GetValue<bool>())
-                CastREnemy();
-            if (_config.Item("useQC").GetValue<bool>())
+          if (_config.Item("useQC").GetValue<bool>())
                 CastQEnemy();
             if (_config.Item("useEC").GetValue<bool>())
                 CastEEnemy();
@@ -548,24 +551,20 @@ namespace D_Zyra
 
         private static void CastREnemy()
         {
-            if (!_r.IsReady())
-            {
-                return;
-            }
-            var target = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
-            var rpred = _r.GetPrediction(target);
-            if (!target.IsValidTarget(_r.Range))
-            {
-                return;
-            }
-            if (ComboDamage(target) > target.Health && _config.Item("use_ulti").GetValue<bool>() &&
-                GetNumberHitByR(target) >= 1)
+            var target = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
+            var rpred = _r.GetPrediction(target, true);
+            if (!target.IsValidTarget(_r.Range) || !_r.IsReady()) return;
+
+            if (ComboDamage(target)*1.3> target.Health && _config.Item("use_ulti").GetValue<bool>() &&
+                _r.GetPrediction(target).Hitchance >= HitChance.High)
             {
                 _r.Cast(rpred.CastPosition, Packets());
             }
-            if (GetNumberHitByR(target) >= _config.Item("MinTargets").GetValue<Slider>().Value)
+            if (ObjectManager.Get<Obj_AI_Hero>().Count(hero => hero.IsValidTarget(_r.Range)) >=
+                _config.Item("MinTargets").GetValue<Slider>().Value
+                && _r.GetPrediction(target).Hitchance >= HitChance.High)
             {
-                _r.Cast(rpred.CastPosition, Packets());
+                _r.Cast(target);
             }
         }
 
@@ -657,92 +656,102 @@ namespace D_Zyra
 
         private static void KillSteal()
         {
-            var target = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
-            var useq = _config.Item("useQkill").GetValue<bool>();
-            var usee = _config.Item("useEkill").GetValue<bool>();
-            var whDmg = _player.GetSpellDamage(target, SpellSlot.W);
-            var qhDmg = _player.GetSpellDamage(target, SpellSlot.Q);
-            var ehDmg = _player.GetSpellDamage(target, SpellSlot.E);
-            var emana = _player.Spellbook.GetSpell(SpellSlot.E).ManaCost;
-            var qmana = _player.Spellbook.GetSpell(SpellSlot.Q).ManaCost;
-            if (useq && target.IsValidTarget(_q.Range) && _q.IsReady())
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy))
             {
-                if (qhDmg >= target.Health && qmana < _player.Mana)
+                var useq = _config.Item("useQkill").GetValue<bool>();
+                var usee = _config.Item("useEkill").GetValue<bool>();
+                var whDmg = _player.GetSpellDamage(hero, SpellSlot.W);
+                var qhDmg = _player.GetSpellDamage(hero, SpellSlot.Q);
+                var ehDmg = _player.GetSpellDamage(hero, SpellSlot.E);
+                var emana = _player.Spellbook.GetSpell(SpellSlot.E).ManaCost;
+                var qmana = _player.Spellbook.GetSpell(SpellSlot.Q).ManaCost;
+                if (useq && hero.IsValidTarget(_q.Range) && _q.IsReady())
                 {
-                    _q.CastIfHitchanceEquals(target, HitChance.High, Packets());
+                    if (qhDmg >= hero.Health && qmana < _player.Mana)
+                    {
+                        _q.CastIfHitchanceEquals(hero, HitChance.High, Packets());
 
+                    }
+                    else if (qhDmg + whDmg > hero.Health && _player.Mana >= qmana && _w.IsReady())
+                    {
+                        _q.CastIfHitchanceEquals(hero, HitChance.High, Packets());
+                        var pos = _e.GetPrediction(hero).CastPosition;
+                        Utility.DelayAction.Add(50, () => _w.Cast(new Vector3(pos.X - 5, pos.Y - 5, pos.Z), Packets()));
+                        Utility.DelayAction.Add(150, () => _w.Cast(new Vector3(pos.X + 5, pos.Y + 5, pos.Z), Packets()));
+                    }
                 }
-                else if (qhDmg + whDmg > target.Health && _player.Mana >= qmana && _w.IsReady())
+                if (usee && hero.IsValidTarget(_e.Range) && _e.IsReady())
                 {
-                    _q.CastIfHitchanceEquals(target, HitChance.High, Packets());
-                    var pos = _e.GetPrediction(target).CastPosition;
-                    Utility.DelayAction.Add(50, () => _w.Cast(new Vector3(pos.X - 5, pos.Y - 5, pos.Z), Packets()));
-                    Utility.DelayAction.Add(150, () => _w.Cast(new Vector3(pos.X + 5, pos.Y + 5, pos.Z), Packets()));
-                }
-            }
-            if (usee && target.IsValidTarget(_e.Range) && _e.IsReady())
-            {
-                if (ehDmg >= target.Health && emana < _player.Mana)
-                {
-                    _e.CastIfHitchanceEquals(target, HitChance.High, Packets());
+                    if (ehDmg >= hero.Health && emana < _player.Mana)
+                    {
+                        _e.CastIfHitchanceEquals(hero, HitChance.High, Packets());
 
-                }
-                else if (ehDmg + whDmg > target.Health && _player.Mana >= emana  && _w.IsReady())
-                {
-                    _e.CastIfHitchanceEquals(target, HitChance.High, Packets());
-                    var pos = _e.GetPrediction(target).CastPosition;
-                    Utility.DelayAction.Add(50, () => _w.Cast(new Vector3(pos.X - 5, pos.Y - 5, pos.Z), Packets()));
-                    Utility.DelayAction.Add(150, () => _w.Cast(new Vector3(pos.X + 5, pos.Y + 5, pos.Z), Packets()));
+                    }
+                    else if (ehDmg + whDmg > hero.Health && _player.Mana >= emana && _w.IsReady())
+                    {
+                        _e.CastIfHitchanceEquals(hero, HitChance.High, Packets());
+                        var pos = _e.GetPrediction(hero).CastPosition;
+                        Utility.DelayAction.Add(50, () => _w.Cast(new Vector3(pos.X - 5, pos.Y - 5, pos.Z), Packets()));
+                        Utility.DelayAction.Add(150, () => _w.Cast(new Vector3(pos.X + 5, pos.Y + 5, pos.Z), Packets()));
+                    }
                 }
             }
         }
-        private static void UseItemes(Obj_AI_Hero target)
+
+        private static void UseItemes()
         {
-            var iBilge = _config.Item("Bilge").GetValue<bool>();
-            var iBilgeEnemyhp = target.Health <=
-                                (target.MaxHealth * (_config.Item("BilgeEnemyhp").GetValue<Slider>().Value) / 100);
-            var iBilgemyhp = _player.Health <=
-                             (_player.MaxHealth * (_config.Item("Bilgemyhp").GetValue<Slider>().Value) / 100);
-            var iBlade = _config.Item("Blade").GetValue<bool>();
-            var iBladeEnemyhp = target.Health <=
-                                (target.MaxHealth * (_config.Item("BladeEnemyhp").GetValue<Slider>().Value) / 100);
-            var iBlademyhp = _player.Health <=
-                             (_player.MaxHealth * (_config.Item("Blademyhp").GetValue<Slider>().Value) / 100);
-            var iYoumuu = _config.Item("Youmuu").GetValue<bool>();
-            var iHextech = _config.Item("Hextech").GetValue<bool>();
-            var iHextechEnemyhp = target.Health <=
-                                  (target.MaxHealth * (_config.Item("HextechEnemyhp").GetValue<Slider>().Value) / 100);
-            var iHextechmyhp = _player.Health <=
-                               (_player.MaxHealth * (_config.Item("Hextechmyhp").GetValue<Slider>().Value) / 100);
-            var iOmen = _config.Item("Omen").GetValue<bool>();
-            var iOmenenemys = ObjectManager.Get<Obj_AI_Hero>().Count(hero => hero.IsValidTarget(450)) >=
-                              _config.Item("Omenenemys").GetValue<Slider>().Value;
-           var ilotis = _config.Item("lotis").GetValue<bool>();
-           var ifrost = _config.Item("frostQ").GetValue<bool>();
-            
-           if (_player.Distance(target) <= 450 && iBilge && (iBilgeEnemyhp || iBilgemyhp) && _bilge.IsReady())
-           {
-               _bilge.Cast(target);
-
-           }
-           if (_player.Distance(target) <= 450 && iBlade && (iBladeEnemyhp || iBlademyhp) && _blade.IsReady())
-           {
-               _blade.Cast(target);
-
-           }
-           if (_player.Distance(target) <= 450 && iYoumuu && _youmuu.IsReady())
-           {
-               _youmuu.Cast();
-           }
-           if (_player.Distance(target) <= 700 && iHextech && (iHextechEnemyhp || iHextechmyhp) && _hextech.IsReady())
-           {
-               _hextech.Cast(target);
-           }
-            if (iOmenenemys && iOmen && _rand.IsReady())
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy))
             {
-                _rand.Cast();
+                var iBilge = _config.Item("Bilge").GetValue<bool>();
+                var iBilgeEnemyhp = hero.Health <=
+                                    (hero.MaxHealth * (_config.Item("BilgeEnemyhp").GetValue<Slider>().Value) / 100);
+                var iBilgemyhp = _player.Health <=
+                                 (_player.MaxHealth*(_config.Item("Bilgemyhp").GetValue<Slider>().Value)/100);
+                var iBlade = _config.Item("Blade").GetValue<bool>();
+                var iBladeEnemyhp = hero.Health <=
+                                    (hero.MaxHealth * (_config.Item("BladeEnemyhp").GetValue<Slider>().Value) / 100);
+                var iBlademyhp = _player.Health <=
+                                 (_player.MaxHealth*(_config.Item("Blademyhp").GetValue<Slider>().Value)/100);
+                var iYoumuu = _config.Item("Youmuu").GetValue<bool>();
+                var iHextech = _config.Item("Hextech").GetValue<bool>();
+                var iHextechEnemyhp = hero.Health <=
+                                      (hero.MaxHealth*(_config.Item("HextechEnemyhp").GetValue<Slider>().Value)/100);
+                var iHextechmyhp = _player.Health <=
+                                   (_player.MaxHealth*(_config.Item("Hextechmyhp").GetValue<Slider>().Value)/100);
+                var iOmen = _config.Item("Omen").GetValue<bool>();
+                var iOmenenemys =  hero.CountEnemysInRange(450) >= _config.Item("Omenenemys").GetValue<Slider>().Value;
+                var ifrost = _config.Item("frostQ").GetValue<bool>();
 
+                if (hero.IsValidTarget(450) && iBilge && (iBilgeEnemyhp || iBilgemyhp) && _bilge.IsReady())
+                {
+                    _bilge.Cast(hero);
+
+                }
+                if (hero.IsValidTarget(450) && iBlade && (iBladeEnemyhp || iBlademyhp) && _blade.IsReady())
+                {
+                    _blade.Cast(hero);
+
+                }
+                if (hero.IsValidTarget(450) && iYoumuu && _youmuu.IsReady())
+                {
+                    _youmuu.Cast();
+                }
+                if (hero.IsValidTarget(700) && iHextech && (iHextechEnemyhp || iHextechmyhp) && _hextech.IsReady())
+                {
+                    _hextech.Cast(hero);
+                }
+                if (iOmenenemys && iOmen && _rand.IsReady())
+                {
+                    _rand.Cast();
+
+                }
+                if (ifrost && _frostqueen.IsReady() && hero.IsValidTarget(_frostqueen.Range))
+                {
+                    _frostqueen.Cast(hero);
+
+                }
             }
+            var ilotis = _config.Item("lotis").GetValue<bool>();
             if (ilotis)
             {
                 foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly || hero.IsMe))
@@ -752,11 +761,7 @@ namespace D_Zyra
                         _lotis.Cast();
                 }
             }
-            if (ifrost && _frostqueen.IsReady() && _player.Distance(target) <= _frostqueen.Range)
-            {
-                _frostqueen.Cast();
-
-            }
+           
         }
         private static void Usepotion()
         {

@@ -265,11 +265,11 @@ namespace D_Kayle
             {
                 Combo();
             }
-            if ((_config.Item("ActiveHarass").GetValue<KeyBind>().Active ||
-                 _config.Item("harasstoggle").GetValue<KeyBind>().Active &&
-                 (100 * (_player.Mana / _player.MaxMana)) > _config.Item("Harrasmana").GetValue<Slider>().Value))
+            if (!_config.Item("ActiveCombo").GetValue<KeyBind>().Active && (_config.Item("ActiveHarass").GetValue<KeyBind>().Active ||
+                 _config.Item("harasstoggle").GetValue<KeyBind>().Active) &&
+                 (100 * (_player.Mana / _player.MaxMana)) > _config.Item("Harrasmana").GetValue<Slider>().Value)
             {
-                Harass();
+               Harass();
             }
             if (_config.Item("activelast").GetValue<KeyBind>().Active &&
                 (100 * (_player.Mana / _player.MaxMana)) > _config.Item("lasthitmana").GetValue<Slider>().Value)
@@ -682,16 +682,13 @@ namespace D_Kayle
         private static void Harass()
         {
             var target = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
-            if (target.IsValidTarget(_q.Range) && _q.IsReady() &&
-                _config.Item("harasstoggle").GetValue<KeyBind>().Active ||
-                _config.Item("UseQHarass").GetValue<bool>())
+            if (target.IsValidTarget(_q.Range) && _q.IsReady() && _config.Item("UseQHarass").GetValue<bool>())
             {
                 _q.Cast(target, Packets());
             }
 
             if (target.IsValidTarget(_q.Range) && _e.IsReady() &&
-                _config.Item("ActiveHarass").GetValue<KeyBind>().Active &&
-                _config.Item("UseEHarass").GetValue<bool>())
+               _config.Item("UseEHarass").GetValue<bool>())
                 _e.Cast();
         }
 

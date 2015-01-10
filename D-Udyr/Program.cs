@@ -42,10 +42,13 @@ namespace D_Udyr
 
         private static Items.Item _tiamat, _hydra, _blade, _bilge, _rand, _lotis;
 
-        //Tiger Style
-        private static List<int> Tiger = new List<int> {0, 1, 2, 0, 0, 2, 0, 2, 0, 2, 2, 1, 1, 1, 1, 3, 3, 3};
-        //Phoenix Style
-        private static List<int> Phoenix = new List<int> {3, 0, 2, 3, 3, 2, 3, 2, 3, 2, 2, 1, 0, 0, 0, 1, 1, 1};
+        //Tiger Style                              1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18
+        private static readonly int[] TigerQEWR = {1, 2, 3, 1, 1, 3, 1, 3, 1, 3, 3, 2, 2, 2, 2, 4, 4, 4};
+        private static readonly int[] TigerQWER = {1, 2, 3, 1, 1, 2, 1, 2, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4};
+       
+        //Phoenix Style                              1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18
+        private static readonly int[] PhoenixREWQ = {4, 2, 3, 4, 4, 3, 4, 4, 3, 3, 3, 2, 2, 2, 1, 2, 1, 1};
+        private static readonly int[] PhoenixRWEQ = {4, 2, 3, 4, 4, 2, 4, 4, 2, 2, 2, 3, 3, 3, 1, 3, 1, 1};
 
         private static void Main(string[] args)
         {
@@ -74,6 +77,7 @@ namespace D_Udyr
             _tiamat = new Items.Item(3077, 250f);
             _rand = new Items.Item(3143, 490f);
             _lotis = new Items.Item(3190, 590f);
+           
 
             SetSmiteSlot();
 
@@ -91,12 +95,10 @@ namespace D_Udyr
 
             //Auto Level
             _config.AddSubMenu(new Menu("Style", "Style"));
-            _config.SubMenu("Style").AddItem(new MenuItem("AutoLevel", "Auto Level")).SetValue(false);
-            _config.SubMenu("Style")
-                .AddItem(new MenuItem("Style", ""))
-                .SetValue(new StringList(new string[2] {"Tiger", "Pheonix"}));
-
-
+            _config.SubMenu("Style").AddItem(new MenuItem("udAutoLevel", "Auto Level")).SetValue(false);
+            _config.SubMenu("Style").AddItem(new MenuItem("udyrStyle", "Level Sequence").SetValue(
+                new StringList(new[] { "Tiger Q-E-W-R", "Tiger Q-W-E-R", "Pheonix R-E-W-Q", "Pheonix R-W-E-Q" })));
+          
             //Combo
             _config.AddSubMenu(new Menu("Main", "Main"));
             _config.SubMenu("Main").AddItem(new MenuItem("AutoShield", "Auto Shield")).SetValue(true);
@@ -150,11 +152,13 @@ namespace D_Udyr
                 .AddItem(new MenuItem("Omenenemys", "Randuin if enemys>").SetValue(new Slider(2, 1, 5)));
             _config.SubMenu("items")
                 .SubMenu("Deffensive")
-                .AddItem(new MenuItem("lotis", "Use Iron Solari"))
-                .SetValue(true);
-            _config.SubMenu("items")
-                .SubMenu("Deffensive")
-                .AddItem(new MenuItem("lotisminhp", "Solari if Ally Hp<  ").SetValue(new Slider(35, 1, 100)));
+                .AddItem(new MenuItem("lotis", "Use Iron Solari")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").AddItem(new MenuItem("lotisminhp", "Solari if Ally Hp<").SetValue(new Slider(35, 1, 100)));
+           
+            _config.SubMenu("items").SubMenu("Deffensive").AddItem(new MenuItem("Righteous", "Use Righteous Glory")).SetValue(true);
+            _config.SubMenu("items").SubMenu("Deffensive").AddItem(new MenuItem("Righteousenemys", "Righteous Glory if  Enemy >=").SetValue(new Slider(2, 1, 5)));
+            _config.SubMenu("items").SubMenu("Deffensive").AddItem(new MenuItem("Righteousenemysrange", "Righteous Glory Range Check").SetValue(new Slider(800, 400, 1400)));
+            
             _config.SubMenu("items").AddSubMenu(new Menu("Potions", "Potions"));
             _config.SubMenu("items")
                 .SubMenu("Potions")
@@ -204,22 +208,36 @@ namespace D_Udyr
 
             //Smite 
             _config.AddSubMenu(new Menu("Smite", "Smite"));
-            _config.SubMenu("Smite").AddItem(new MenuItem("Usesmite", "Use Smite(toggle)").SetValue(new KeyBind("H".ToCharArray()[0], KeyBindType.Toggle)));
+            _config.SubMenu("Smite")
+                .AddItem(
+                    new MenuItem("Usesmite", "Use Smite(toggle)").SetValue(new KeyBind("H".ToCharArray()[0],
+                        KeyBindType.Toggle)));
             _config.SubMenu("Smite").AddItem(new MenuItem("Useblue", "Smite Blue Early ")).SetValue(true);
-            _config.SubMenu("Smite").AddItem(new MenuItem("manaJ", "Smite Blue Early if MP% <").SetValue(new Slider(35, 1, 100)));
+            _config.SubMenu("Smite")
+                .AddItem(new MenuItem("manaJ", "Smite Blue Early if MP% <").SetValue(new Slider(35, 1, 100)));
             _config.SubMenu("Smite").AddItem(new MenuItem("Usered", "Smite Red Early ")).SetValue(true);
-            _config.SubMenu("Smite").AddItem(new MenuItem("healthJ", "Smite Red Early if HP% <").SetValue(new Slider(35, 1, 100)));
+            _config.SubMenu("Smite")
+                .AddItem(new MenuItem("healthJ", "Smite Red Early if HP% <").SetValue(new Slider(35, 1, 100)));
 
             _config.AddToMainMenu();
             Drawing.OnDraw += Drawing_OnDraw;
             Game.OnGameUpdate += OnGameUpdate;
-            CustomEvents.Unit.OnLevelUp += OnLevelUp;
-
+            _config.Item("udAutoLevel").ValueChanged += LevelUpMode;
+            if (_config.Item("udAutoLevel").GetValue<bool>())
+            {
+                var level = new AutoLevel(Style());
+            }
+            
 
             Game.PrintChat("<font color='#881df2'>Udyr By Diabaths </font>Loaded!");
             Game.PrintChat("<font color='#881df2'>StunCycle by xcxooxl");
             Game.PrintChat(
-               "<font color='#FF0000'>If You like my work and want to support me,  plz donate via paypal in </font> <font color='#FF9900'>ssssssssssmith@hotmail.com</font> (10) S");
+                "<font color='#FF0000'>If You like my work and want to support me,  plz donate via paypal in </font> <font color='#FF9900'>ssssssssssmith@hotmail.com</font> (10) S");
+        }
+
+        private static void LevelUpMode(object sender, OnValueChangeEventArgs e)
+        {
+            AutoLevel.Enabled(e.GetNewValue<bool>());
         }
 
         private static void OnGameUpdate(EventArgs args)
@@ -262,20 +280,24 @@ namespace D_Udyr
 
             _orbwalker.SetMovement(true);
         }
-
-        private static void OnLevelUp(LeagueSharp.Obj_AI_Base sender,
-            LeagueSharp.Common.CustomEvents.Unit.OnLevelUpEventArgs args)
+        private static int[] Style()
         {
-            if (!sender.IsValid || !sender.IsMe)
-                return;
-
-            if (!_config.Item("AutoLevel").GetValue<bool>()) return;
-            if (_config.Item("Style").GetValue<StringList>().SelectedIndex == 0)
-                _player.Spellbook.LevelUpSpell((SpellSlot) Tiger[args.NewLevel - 1]);
-            else if (_config.Item("Style").GetValue<StringList>().SelectedIndex == 1)
-                _player.Spellbook.LevelUpSpell((SpellSlot) Phoenix[args.NewLevel - 1]);
+            switch (_config.Item("udyrStyle").GetValue<StringList>().SelectedIndex)
+            {
+                case 0:
+                    return TigerQEWR;
+                case 1:
+                    return TigerQWER;
+                case 2:
+                    return PhoenixREWQ;
+                case 3:
+                    return PhoenixRWEQ;
+               
+                default:
+                    return null;
+            }
         }
-
+       
 
         private static void Farm()
         {
@@ -434,50 +456,59 @@ namespace D_Udyr
 
         }
 
-        private static void UseItemes(Obj_AI_Hero target)
+        private static void UseItemes()
         {
-            var iBilge = _config.Item("Bilge").GetValue<bool>();
-            var iBilgeEnemyhp = target.Health <=
-                                (target.MaxHealth*(_config.Item("BilgeEnemyhp").GetValue<Slider>().Value)/100);
-            var iBilgemyhp = _player.Health <=
-                             (_player.MaxHealth*(_config.Item("Bilgemyhp").GetValue<Slider>().Value)/100);
-            var iBlade = _config.Item("Blade").GetValue<bool>();
-            var iBladeEnemyhp = target.Health <=
-                                (target.MaxHealth*(_config.Item("BladeEnemyhp").GetValue<Slider>().Value)/100);
-            var iBlademyhp = _player.Health <=
-                             (_player.MaxHealth*(_config.Item("Blademyhp").GetValue<Slider>().Value)/100);
-            var iOmen = _config.Item("Omen").GetValue<bool>();
-            var iOmenenemys = ObjectManager.Get<Obj_AI_Hero>().Count(hero => hero.IsValidTarget(450)) >=
-                              _config.Item("Omenenemys").GetValue<Slider>().Value;
-            var iTiamat = _config.Item("Tiamat").GetValue<bool>();
-            var iHydra = _config.Item("Hydra").GetValue<bool>();
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy))
+            {
+                var iBilge = _config.Item("Bilge").GetValue<bool>();
+                var iBilgeEnemyhp = hero.Health <=
+                                    (hero.MaxHealth * (_config.Item("BilgeEnemyhp").GetValue<Slider>().Value) / 100);
+                var iBilgemyhp = _player.Health <=
+                                 (_player.MaxHealth*(_config.Item("Bilgemyhp").GetValue<Slider>().Value)/100);
+                var iBlade = _config.Item("Blade").GetValue<bool>();
+                var iBladeEnemyhp = hero.Health <=
+                                    (hero.MaxHealth * (_config.Item("BladeEnemyhp").GetValue<Slider>().Value) / 100);
+                var iBlademyhp = _player.Health <=
+                                 (_player.MaxHealth*(_config.Item("Blademyhp").GetValue<Slider>().Value)/100);
+                var iOmen = _config.Item("Omen").GetValue<bool>();
+                var iOmenenemys = hero.CountEnemysInRange(450) >= _config.Item("Omenenemys").GetValue<Slider>().Value;
+                var iTiamat = _config.Item("Tiamat").GetValue<bool>();
+                var iHydra = _config.Item("Hydra").GetValue<bool>();
+                var iRighteous = _config.Item("Righteous").GetValue<bool>();
+                var iRighteousenemys = hero.CountEnemysInRange(_config.Item("Righteousenemysrange").GetValue<Slider>().Value) >= _config.Item("Righteousenemys").GetValue<Slider>().Value;
+
+                if (hero.IsValidTarget(450) && iBilge && (iBilgeEnemyhp || iBilgemyhp) && _bilge.IsReady())
+                {
+                    _bilge.Cast(hero);
+
+                }
+                if (hero.IsValidTarget(450) && iBlade && (iBladeEnemyhp || iBlademyhp) && _blade.IsReady())
+                {
+                    _blade.Cast(hero);
+
+                }
+                if (iTiamat && _tiamat.IsReady() && hero.IsValidTarget(_tiamat.Range))
+                {
+                    _tiamat.Cast();
+
+                }
+                if (iHydra && _hydra.IsReady() && hero.IsValidTarget(_hydra.Range))
+                {
+                    _hydra.Cast();
+
+                }
+                if (iOmenenemys && iOmen && _rand.IsReady())
+                {
+                    _rand.Cast();
+
+                }
+                if (iRighteousenemys && iRighteous && Items.HasItem(3800) && Items.CanUseItem(3800))
+                {
+                    Items.UseItem(3800);
+
+                }
+            }
             var ilotis = _config.Item("lotis").GetValue<bool>();
-           
-            if (_player.Distance(target) <= 450 && iBilge && (iBilgeEnemyhp || iBilgemyhp) && _bilge.IsReady())
-            {
-                _bilge.Cast(target);
-
-            }
-            if (_player.Distance(target) <= 450 && iBlade && (iBladeEnemyhp || iBlademyhp) && _blade.IsReady())
-            {
-                _blade.Cast(target);
-
-            }
-            if (iTiamat && _tiamat.IsReady() && target.IsValidTarget(_tiamat.Range))
-            {
-                _tiamat.Cast();
-
-            }
-            if (iHydra && _hydra.IsReady() && target.IsValidTarget(_hydra.Range))
-            {
-                _hydra.Cast();
-
-            }
-            if (iOmenenemys && iOmen && _rand.IsReady())
-            {
-                _rand.Cast();
-
-            }
             if (ilotis)
             {
                 foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly || hero.IsMe))
@@ -548,15 +579,18 @@ namespace D_Udyr
                 }
             }
         }
-        private static void Smiteontarget(Obj_AI_Hero target)
+        private static void Smiteontarget()
         {
-            var usesmite = _config.Item("smitecombo").GetValue<bool>();
-            var itemscheck = SmiteBlue.Any(i => Items.HasItem(i)) || SmiteRed.Any(i => Items.HasItem(i));
-            if (itemscheck && usesmite &&
-                ObjectManager.Player.Spellbook.CanUseSpell(_smiteSlot) == SpellState.Ready &&
-                target.Distance(_player.Position) < _smite.Range)
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy))
             {
-                ObjectManager.Player.Spellbook.CastSpell(_smiteSlot, target);
+                var usesmite = _config.Item("smitecombo").GetValue<bool>();
+                var itemscheck = SmiteBlue.Any(i => Items.HasItem(i)) || SmiteRed.Any(i => Items.HasItem(i));
+                if (itemscheck && usesmite &&
+                    ObjectManager.Player.Spellbook.CanUseSpell(_smiteSlot) == SpellState.Ready &&
+                    hero.IsValidTarget(_smite.Range))
+                {
+                    ObjectManager.Player.Spellbook.CastSpell(_smiteSlot, hero);
+                }
             }
         }
         private static void Combo()
@@ -568,7 +602,7 @@ namespace D_Udyr
 
             if (target != null && _player.Distance(target) <= _config.Item("TargetRange").GetValue<Slider>().Value)
             {
-                Smiteontarget(target);
+                Smiteontarget();
                 if (_e.IsReady() && !target.HasBuff("udyrbearstuncheck", true))
                 {
                     _e.Cast();
@@ -595,7 +629,7 @@ namespace D_Udyr
                     _w.Cast();
                     return;
                 }
-                UseItemes(target);
+                UseItemes();
             }
         }
 
@@ -689,6 +723,7 @@ namespace D_Udyr
                 return;
             }
         }
+
         private static int GetSmiteDmg()
         {
             int level = _player.Level;

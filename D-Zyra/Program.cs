@@ -242,9 +242,11 @@ namespace D_Zyra
 
             _config.AddToMainMenu();
 
-            Game.PrintChat("<font color='#881df2'>D-Zyra by Diabaths (WIP)</font> Loaded.");
+            Game.PrintChat("<font color='#881df2'>D-Zyra by Diabaths </font> Loaded.");
             Game.PrintChat(
                "<font color='#FF0000'>If You like my work and want to support, and keep it always up to date plz donate via paypal in </font> <font color='#FF9900'>ssssssssssmith@hotmail.com</font> (10) S");
+            Game.PrintChat(
+               "<font color='#FF9900'>Please help me I buy new account(2x banned)</font>");
             Drawing.OnDraw += Drawing_OnDraw;
             Game.OnGameUpdate += Game_OnGameUpdate;
             AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
@@ -266,7 +268,7 @@ namespace D_Zyra
             }
             if ((_config.Item("ActiveHarass").GetValue<KeyBind>().Active ||
                  _config.Item("harasstoggle").GetValue<KeyBind>().Active) &&
-                (100*(_player.Mana/_player.MaxMana)) > _config.Item("harassmana").GetValue<Slider>().Value)
+                (100 * (_player.Mana / _player.MaxMana)) > _config.Item("harassmana").GetValue<Slider>().Value && !_config.Item("ActiveCombo").GetValue<KeyBind>().Active)
             {
                 Harass();
 

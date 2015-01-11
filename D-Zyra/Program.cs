@@ -246,7 +246,7 @@ namespace D_Zyra
             Game.PrintChat(
                "<font color='#FF0000'>If You like my work and want to support, and keep it always up to date plz donate via paypal in </font> <font color='#FF9900'>ssssssssssmith@hotmail.com</font> (10) S");
             Game.PrintChat(
-               "<font color='#FF9900'>Please help me I buy new account(2x banned)</font>");
+               "<font color='#FF9900'>Please help me to buy new account(2x banned)</font>");
             Drawing.OnDraw += Drawing_OnDraw;
             Game.OnGameUpdate += Game_OnGameUpdate;
             AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
